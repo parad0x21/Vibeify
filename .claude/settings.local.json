@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm info *)",
+      "Bash(npm --version)",
+      "Bash(npx --yes create-next-app@latest . --typescript --tailwind --eslint --app --no-src-dir --import-alias \"@/*\" --use-npm --turbopack --yes)",
+      "Bash(npm install *)",
+      "Bash(npm view *)",
+      "Bash(npm run *)",
+      "Bash(grep -o \"Rendering[^\\\\\"]\\\\{0,40\\\\}\" /Users/rajverma/SKRIBE_exmaple/node_modules/next/dist/compiled/next-devtools/index.js)",
+      "Bash(grep -oE \"[A-Z][a-zA-Z]{0,30}Rendering[a-zA-Z .]{0,40}\" /Users/rajverma/SKRIBE_exmaple/node_modules/next/dist/compiled/next-devtools/index.js)",
+      "Bash(kill 93151)",
+      "Bash(grep -oE \"\\\\\"[A-Za-z ]{0,20}endering[a-zA-Z ./]{0,50}\\\\\"\" /Users/rajverma/SKRIBE_exmaple/node_modules/next/dist/compiled/next-devtools/index.js)",
+      "Bash(rm app/app/\\\\[appId\\\\]/prd/placeholder.tsx && ls app/app/\\\\[appId\\\\]/prd/)",
+      "Skill(claude-api)",
+      "Skill(claude-api:*)"
+    ],
+    "additionalDirectories": [
+      "/Users/rajverma/SKRIBE_exmaple/app/app/[appId]/prd"
+    ]
+  }
+}

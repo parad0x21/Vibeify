@@ -1,0 +1,529 @@
+# Vibeify — Project Plan & Implementation Roadmap
+
+> Planning app for vibe coders and app builders. Tracks app projects, PRDs, stacks, knowledge, and features, with an AI assistant alongside.
+
+---
+
+## 0. Status Legend
+
+- `[ ]` Not started
+- `[~]` In progress
+- `[x]` Complete
+- `[!]` Blocked / needs decision
+
+Update this file at the end of every Claude Code session. Carry context across sessions.
+
+---
+
+## 1. Tech Stack (Locked)
+
+| Layer | Choice |
+|---|---|
+| Framework | Next.js 15 (App Router) + React 19 |
+| Styling | Tailwind CSS v4 |
+| Auth | Clerk |
+| Backend / DB | Convex.dev |
+| Payments | Polar (later phase) |
+| AI | Claude API (`@anthropic-ai/sdk`) — model `claude-opus-4-7` (latest Opus 4.7) |
+| Web Scraping | Firecrawl API |
+| Typography | Space Grotesk Medium (headings), Work Sans (body) — via `next/font/google` |
+| Markdown Editor | `@uiw/react-md-editor` or `tiptap` w/ markdown extension (decide in Phase 4) |
+| Drag & Drop | `@dnd-kit/core` (for kanban + reorderable releases) |
+| State / Forms | React 19 actions + `react-hook-form` + `zod` |
+| Icons | `lucide-react` |
+| Animations | `framer-motion` (subtle only) |
+| Deployment | Vercel (frontend) + Convex Cloud (backend) |
+
+---
+
+## 2. Environment Variables
+
+Create `.env.local` (committed: `.env.example` only).
+
+```
+# Clerk
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=
+CLERK_SECRET_KEY=
+NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in
+NEXT_PUBLIC_CLERK_SIGN_UP_URL=/sign-up
+NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL=/welcome
+NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL=/welcome
+
+# Convex
+NEXT_PUBLIC_CONVEX_URL=
+CONVEX_DEPLOYMENT=
+CONVEX_DEPLOY_KEY=               # for prod deploys
+
+# Convex <> Clerk integration
+CLERK_JWT_ISSUER_DOMAIN=         # from Clerk JWT template "convex"
+
+# Anthropic / Claude
+ANTHROPIC_API_KEY=               # used server-side only (Next route handlers or Convex actions)
+
+# Firecrawl
+FIRECRAWL_API_KEY=
+
+# Polar (later)
+POLAR_ACCESS_TOKEN=
+POLAR_WEBHOOK_SECRET=
+
+# App
+NEXT_PUBLIC_APP_URL=https://app.<domain>
+```
+
+**Secret hygiene rule:** `ANTHROPIC_API_KEY` and `FIRECRAWL_API_KEY` MUST NOT be `NEXT_PUBLIC_*`. All Claude + Firecrawl calls go through Convex actions (preferred) or Next.js route handlers — never the browser.
+
+---
+
+## 3. Dependencies
+
+### Runtime
+```
+next react react-dom
+tailwindcss @tailwindcss/postcss
+@clerk/nextjs
+convex
+@anthropic-ai/sdk
+@firecrawl/sdk            # or fetch directly
+@uiw/react-md-editor      # tentative
+@dnd-kit/core @dnd-kit/sortable @dnd-kit/utilities
+react-hook-form zod @hookform/resolvers
+lucide-react
+framer-motion
+sonner                    # toasts for "Saved" / "Saving…" indicators
+clsx tailwind-merge
+```
+
+### Dev
+```
+typescript @types/react @types/node
+eslint eslint-config-next
+prettier prettier-plugin-tailwindcss
+```
+
+---
+
+## 4. Convex Schema (Planned)
+
+File: `convex/schema.ts`
+
+```ts
+defineSchema({
+  users: defineTable({
+    clerkUserId: v.string(),       // subject from Clerk JWT
+    email: v.string(),
+    name: v.optional(v.string()),
+    imageUrl: v.optional(v.string()),
+    createdAt: v.number(),
+  }).index("by_clerk_id", ["clerkUserId"]),
+
+  apps: defineTable({
+    ownerId: v.id("users"),
+    name: v.string(),
+    type: v.union(v.literal("web"), v.literal("mobile"), v.literal("desktop")),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  }).index("by_owner", ["ownerId"]),
+
+  // Each app has at most one PRD doc (1:1)
+  prds: defineTable({
+    appId: v.id("apps"),
+    content: v.string(),           // markdown
+    updatedAt: v.number(),
+    savingVersion: v.number(),     // for optimistic save indicator
+  }).index("by_app", ["appId"]),
+
+  stacks: defineTable({
+    appId: v.id("apps"),
+    builder: v.optional(v.string()),
+    frontend: v.array(v.string()),
+    backend: v.array(v.string()),
+    database: v.array(v.string()),
+    authentication: v.array(v.string()),
+    apis: v.array(v.string()),
+    updatedAt: v.number(),
+  }).index("by_app", ["appId"]),
+
+  knowledge: defineTable({
+    appId: v.id("apps"),
+    title: v.string(),
+    content: v.string(),           // markdown
+    source: v.union(
+      v.literal("url"),
+      v.literal("upload"),
+      v.literal("scratch"),
+      v.literal("ai_pricing"),
+      v.literal("ai_market"),
+      v.literal("ai_persona"),
+    ),
+    sourceUrl: v.optional(v.string()),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  }).index("by_app", ["appId"]),
+
+  releases: defineTable({
+    appId: v.id("apps"),
+    name: v.string(),
+    emoji: v.string(),
+    order: v.number(),             // for reorder
+    createdAt: v.number(),
+  }).index("by_app_order", ["appId", "order"]),
+
+  features: defineTable({
+    appId: v.id("apps"),
+    releaseId: v.optional(v.id("releases")),
+    name: v.string(),
+    description: v.string(),       // markdown
+    status: v.string(),            // matches a column key
+    columnOrder: v.number(),       // order within a kanban column
+    releaseOrder: v.number(),      // order within its release card list
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_app", ["appId"])
+    .index("by_app_release", ["appId", "releaseId"])
+    .index("by_app_status", ["appId", "status"]),
+
+  // Kanban columns are per-app so users can add custom ones later
+  columns: defineTable({
+    appId: v.id("apps"),
+    key: v.string(),               // "backlog", "in_progress", etc.
+    label: v.string(),
+    order: v.number(),
+  }).index("by_app_order", ["appId", "order"]),
+
+  // AI assistant chat threads (one per app)
+  chatMessages: defineTable({
+    appId: v.id("apps"),
+    role: v.union(v.literal("user"), v.literal("assistant")),
+    content: v.string(),
+    createdAt: v.number(),
+  }).index("by_app", ["appId"]),
+})
+```
+
+**Defaults to seed on app creation:**
+- Columns: `backlog`, `in_progress`, `testing`, `complete`, `live`
+- Empty PRD doc
+- Empty stack doc (or filled from Setup Step 2)
+
+---
+
+## 5. Route Map (App Router)
+
+```
+app/
+  layout.tsx                    # Clerk + Convex providers, fonts, toaster
+  globals.css
+  page.tsx                      # → redirect to /sign-in if signed out, else /welcome or last app
+  sign-in/[[...sign-in]]/page.tsx
+  sign-up/[[...sign-up]]/page.tsx
+  welcome/page.tsx              # Create new app vs Import from GitHub (coming soon)
+  new/
+    page.tsx                    # 3-step setup flow (client component w/ state machine)
+  app/[appId]/
+    layout.tsx                  # Top-right app switcher / new app / profile;
+                                # Left collapsible AI panel; bottom: outlet
+    page.tsx                    # → redirect to /app/[appId]/prd
+    prd/page.tsx
+    stack/page.tsx
+    knowledge/page.tsx          # grid
+    knowledge/[docId]/page.tsx  # editor + back button
+    features/page.tsx           # ?view=release|progress (default release)
+  api/
+    claude/extract-stack/route.ts
+    claude/generate-knowledge/route.ts
+    claude/extract-features/route.ts
+    claude/chat/route.ts        # streaming
+    firecrawl/scrape/route.ts
+  middleware.ts                 # Clerk auth middleware
+```
+
+> Server-side AI/Firecrawl calls may live in Convex actions instead of Next route handlers — final decision in Phase 5. Convex actions are cleaner (auth + DB access in one place); Next routes are easier for streaming responses. Plan: **streaming chat via Next route**, **non-streaming generation via Convex actions**.
+
+---
+
+## 6. Implementation Phases
+
+### Phase 1 — Project Bootstrap `[x]`
+- [x] Scaffold Next.js 16 (App Router) + React 19 + TS manually (create-next-app rejects capital-letter dir name)
+- [x] Install all runtime deps from §3
+- [x] Configure Tailwind v4 + design tokens (radius, shadow, typography) in `app/globals.css`
+- [x] Set up `next/font/google` for Space Grotesk + Work Sans (CSS vars in root layout)
+- [x] Create `lib/utils.ts` (`cn` helper + `formatRelative`)
+- [x] Add `.env.example`
+- [x] Configure ESLint flat config (Next 16 `eslint-config-next` + `core-web-vitals` + `typescript`) + Prettier
+- [x] Add base `globals.css` w/ design tokens
+- [x] Project README with setup instructions
+
+### Phase 2 — Auth + Convex Wiring `[x]`
+- [~] Initialize Convex (`npx convex dev`) — **deferred to user** (needs login). Stub `convex/_generated/*` written so typecheck passes; real codegen runs on first `npx convex dev`.
+- [~] Clerk dashboard setup — **deferred to user** (Clerk app + `convex` JWT template)
+- [x] `convex/schema.ts` (full schema from §4)
+- [x] `convex/auth.config.ts` w/ Clerk issuer (reads `CLERK_JWT_ISSUER_DOMAIN`)
+- [x] `convex/users.ts` w/ `me`, `ensureUser`, `getCurrentUser`, `requireUser` helpers
+- [x] `ConvexProviderWithClerk` in `components/providers.tsx` + sonner Toaster
+- [x] `proxy.ts` (Next 16 renamed `middleware.ts` → `proxy.ts`) w/ `clerkMiddleware` + route matcher
+- [x] `/sign-in`, `/sign-up` pages w/ Clerk components + custom `AuthShell`
+- [x] Root `page.tsx` redirect: signed-out → `/sign-in`, signed-in → `/welcome`
+- [x] `/welcome` page w/ "Create new app" + disabled "Import from GitHub (Coming soon)" cards
+- [x] `EnsureUser` component mirrors signed-in Clerk user → `users` Convex row on every load
+
+### Phase 3 — Schema + App CRUD `[x]`
+- [x] `convex/schema.ts` (§4)
+- [x] `convex/apps.ts`: `createApp`, `listMyApps`, `getApp`, `renameApp`
+- [x] `convex/users.ts`: `ensureUser`, `me`, `upsertFromClerk`, `deleteByClerkId`
+- [x] Seed defaults (5 default columns, empty PRD, empty stack) on `createApp`
+- [x] Authorization helper: `requireAppAccess(ctx, appId)` in `convex/users.ts`
+- [x] **Bonus:** Clerk webhook handler (`convex/http.ts`) with svix verification + cascade delete
+
+### Phase 4 — Welcome + 3-Step Setup `[x]`
+- [x] `/welcome` — two cards: "Create new app", "Import from GitHub" (disabled w/ "Coming soon" badge)
+- [x] `/new` setup flow:
+  - [x] Stepper component (`components/ui/stepper.tsx`)
+  - [x] Step 1: name input + type radio (web/mobile/desktop) w/ icons
+  - [x] Step 2: stack picker — chip grid per category (builder single-select, rest multi) — skippable via "Skip for now"
+  - [x] Step 3: review summary + "Create app"
+  - [x] Step transitions w/ framer-motion `AnimatePresence`
+  - [x] On submit: `createApp` mutation → `router.push("/app/[appId]/prd")`
+- [x] Reusable primitives created: `Button`, `Input`, `Chip`, `RadioCard`, `Stepper`
+- [x] Shared constants in `lib/stack-options.ts` (reused by Phase 7 Stack page)
+- [x] Placeholder `/app/[appId]/prd` page so post-create lands somewhere — replaced in Phase 6
+
+### Phase 5 — App Shell `[x]`
+- [x] `app/app/[appId]/layout.tsx` server layout wraps `AppShell` client component
+- [x] Top centre tab nav (`components/app-shell/top-tabs.tsx`): PRD / Stack / Knowledge / Features with framer-motion `layoutId` animated pill (springy slide between tabs)
+- [x] Top right: `AppSwitcher` dropdown (lists user's apps from `listMyApps`, click-outside + Escape to close), "+" button → `/new`, Clerk `<UserButton />`
+- [x] Left collapsible `AiPanel` (full-height, persistent open/closed via `useLocalStorage`, `⌘B` toggle)
+- [x] AI panel skeleton: disabled input + "Coming in Phase 10" label
+- [x] App-not-found guard in shell main area
+- [x] Sticky header w/ backdrop blur
+- [x] Reusable `ComingSoonPanel` + sibling placeholder pages for `/stack`, `/knowledge`, `/features` so the tabs actually navigate
+- [x] `lib/use-local-storage.ts` uses `useSyncExternalStore` (React 19's `react-hooks/set-state-in-effect` rule)
+
+### Phase 6 — PRD Page `[x]`
+- [x] `convex/prds.ts`: `getPrd`, `savePrd` (max 500 KB content, increments `savingVersion`)
+- [x] `getAppIfOwned` soft auth helper added to `convex/users.ts` for null-on-no-access query pattern
+- [x] Markdown editor: `@uiw/react-md-editor` (dynamic import, `ssr: false`)
+- [x] 800ms debounced autosave from `onChange`; ticket counter discards stale completions
+- [x] Flushes pending save on tab hide (`visibilitychange`) + on unmount
+- [x] `SaveStatusPill` component (saving / saved / error) — re-renders every 60s so "Nm ago" stays fresh
+- [x] "Download .md" button (Blob → temp anchor → revoke), filename slugified from app name
+- [x] Page-level loading skeleton matches editor layout
+- [x] @uiw/react-md-editor styles overridden in `globals.css` to match design tokens (radius, border, shadow, fonts)
+
+### Phase 7 — Stack Page `[x]`
+- [x] `convex/stacks.ts`: `getStack`, `updateStack`
+- [x] `convex/aiStack.ts` Node action (`"use node"`) — Claude Opus 4.7 via `messages.parse()` + `zodOutputFormat` for guaranteed-valid structured output (zod enums restrict to allowed values)
+- [x] Reusable `StackPicker` component (chip grid) — used by setup Step 2 + Stack page
+- [x] Setup flow refactored to use `StackPicker` (DRY)
+- [x] Reusable `Modal` component (`components/ui/modal.tsx`) — Escape closes, click-outside closes, body-scroll lock, framer-motion enter/exit
+- [x] Stack page: 600ms debounced autosave on chip toggle, `SaveStatusPill`, "Extract from PRD" button
+- [x] Extract flow: action returns suggestion → modal shows additions-only diff (existing selections never get removed; builder only overwrites when current is null) → Apply merges via union
+- [x] Empty-diff state ("your stack already matches the PRD")
+- [x] Toast-on-error if `ANTHROPIC_API_KEY` is unset or call fails
+- [x] Loading skeleton matches editor layout
+- [x] **Setup note:** user must run `npx convex env set ANTHROPIC_API_KEY sk-ant-...` for the action to work
+
+### Phase 8 — Knowledge Page `[x]`
+- [x] `convex/knowledge.ts`: `list`, `get`, `create`, `update`, `remove` (all w/ auth + 500KB content limit + 200-char title)
+- [x] `convex/firecrawl.ts` Node action: `scrapeUrl` — POSTs to Firecrawl v1, parses title from page metadata, falls back to hostname, inserts via `api.knowledge.create`
+- [x] `convex/aiKnowledge.ts` Node action: `generateFromPrd` with 3 kinds (`ai_pricing` / `ai_market` / `ai_persona`), each with a tuned system prompt
+- [x] Grid view w/ card per doc — source badge (6 tones), updated-time, hover-revealed delete button
+- [x] "Add knowledge" dropdown menu (custom click-outside, click-to-close): Blank doc / From URL / Upload markdown file
+  - [x] URL → `Modal` w/ input → action scrapes → router pushes to new doc
+  - [x] Upload → hidden file input → client reads `file.text()` → creates doc → pushes
+  - [x] Blank → creates "Untitled" empty doc → pushes
+- [x] 3 AI quick-create cards (Pricing / Market / Persona) — fire `generateFromPrd` action, navigate when complete
+- [x] `/app/[appId]/knowledge/[docId]` editor:
+  - [x] Editable title (Notion-style inline input)
+  - [x] Markdown editor (extracted shared `MarkdownEditor` component — also used by PRD page)
+  - [x] Autosave 800ms debounce on title OR content change
+  - [x] `SaveStatusPill`, Download .md, Delete (w/ confirm modal), Back-to-knowledge link
+  - [x] Source URL shown above title for URL-imported docs, links to original
+  - [x] Not-found state for invalid `docId`
+- [x] Empty state for the docs grid
+- [x] **Setup note:** user must run `npx convex env set FIRECRAWL_API_KEY fc-...` for the URL flow, and `ANTHROPIC_API_KEY` (already set in Phase 7) for AI generation
+
+### Phase 9 — Features Page `[x]`
+- [x] `convex/features.ts` (list / get / create / update / remove / setColumnOrder / createMany)
+- [x] `convex/releases.ts` (list / create / update / remove / setOrder)
+- [x] `convex/columns.ts` (list — reads the 5 defaults seeded on app create)
+- [x] `convex/aiFeatures.ts` Node action — Claude Opus 4.7 via `messages.parse()` + zod schema (6–15 features, structured), bulk-inserts via `api.features.createMany`
+- [x] View toggle (Releases / Progress) — local state, animated tab pill style
+- [x] Release view:
+  - [x] Vertical grouped cards per release with emoji + name header + feature-count pill
+  - [x] Reorderable releases via `@dnd-kit/sortable` (drag handle on each header)
+  - [x] Unassigned bucket for features without a release
+  - [x] Empty-release "No features in this release yet" placeholder
+  - [x] "+ New release" dashed card → opens `ReleaseModal`
+- [x] Release modal (`release-modal.tsx`): name input + 12 emoji presets + free-text emoji input
+- [x] Progress view (kanban):
+  - [x] 5 columns from `api.columns.list`
+  - [x] Drag features between columns w/ `@dnd-kit/core` + `closestCorners` collision detection
+  - [x] `onDragOver` does cross-column shuffle for smooth "lands in target" feel; `onDragEnd` persists via `setColumnOrder` (only changed columns get written)
+  - [x] `DragOverlay` shows the dragged card with rotation
+  - [x] Empty-column "Drop here" placeholder so empty columns are valid drop targets (via `useDroppable`)
+- [x] Feature drawer (`feature-drawer.tsx`): slide-out from right with framer-motion, contains:
+  - [x] Editable name (Notion-style inline input)
+  - [x] Status + Release selects
+  - [x] Markdown description editor (reuses shared `MarkdownEditor`)
+  - [x] 800ms debounced autosave on text fields, instant save on selects
+  - [x] `SaveStatusPill` + Delete (with confirm `Modal`)
+- [x] "Extract from PRD" button — generates 6–15 features, bulk inserts to backlog, success toast
+- [x] **Setup note:** `ANTHROPIC_API_KEY` already set in Phase 7 → AI extraction works as-is
+
+### Phase 10 — AI Assistant `[x]`
+- [x] `convex/chatMessages.ts` — `list` (sorted asc), `send` (50 KB cap), `clear`
+- [x] `app/api/claude/chat/route.ts` — Next route handler (Node runtime), Clerk auth → `getToken({ template: "convex" })` → `ConvexHttpClient.setAuth()` → Convex queries run as the user
+- [x] Context assembly: PRD + stack + releases + features (grouped by status, truncated descriptions) + knowledge (titles + first 4000 chars each)
+- [x] System prompt: "You are Vibeify Assistant..." + the rendered context block
+- [x] **Prompt caching** — full system prompt marked `cache_control: ephemeral`, so multi-turn chats reuse the cached prefix at ~10% of input cost
+- [x] Streaming via `client.messages.stream()` w/ `model: "claude-opus-4-7"`, piped to an SSE `ReadableStream` (delta events as `data: {type:"delta",text:"…"}`)
+- [x] User message persisted to `chatMessages` *before* the model call; assistant message persisted *after* the stream finishes (so a network drop preserves the user's input)
+- [x] Chat UI in left panel — message list w/ `@uiw/react-markdown-preview` rendering (dynamic-imported, no SSR cost), user bubbles aligned right (light bg), assistant bubbles aligned left w/ markdown
+- [x] Live streaming bubble with blinking cursor; animated three-dot "thinking" state before first token
+- [x] Multi-line textarea input — Enter sends, Shift+Enter newline, send button disables while streaming, `AbortController` cancels on app change / unmount
+- [x] Clear history button (only visible when messages exist) → confirm modal → `api.chatMessages.clear`
+- [x] Chat-message markdown styles in `globals.css` (`.vibeify-chat-message`) — headings use display font, inline code w/ subtle bg, fenced code blocks bordered
+- [x] AppShell threads `appId` through to `AiPanel`
+- [x] **Reminder for user:** `ANTHROPIC_API_KEY` must be set in `.env.local` (not just Convex) — chat route reads it server-side from the Next process
+
+### Phase 11 — Polish `[x]`
+- [x] **Page transitions** — `AnimatePresence` in `AppShell` keyed by `pathname`, 150ms fade + 4px slide between routes
+- [x] **Tab pill animation** (already shipped in Phase 5 via `layoutId="active-tab-pill"`) + `aria-current="page"` on active tab
+- [x] **Toasts** for autosave/errors (already shipped via sonner; covers Stack extract, Knowledge create, Feature ops, AI chat, etc.)
+- [x] Empty states:
+  - [x] **Welcome page** — new `ExistingApps` client component shows the user's existing apps below the create cards (hidden if none)
+  - [x] **Features page** — first-time empty state with `LayoutGrid` icon + "Extract from PRD" / "New feature" CTAs when no releases AND no features
+  - [x] Knowledge empty state (Phase 8), per-release "no features" (Phase 9), per-column "Drop here" (Phase 9) already in place
+- [x] Loading skeletons — already covered for PRD, Stack, Knowledge, Features
+- [x] **Keyboard shortcuts:** `⌘B` toggles AI panel (Phase 5), Enter sends in chat input
+- [ ] `⌘K` command palette — deferred per plan
+- [x] **Responsive:** kanban switches from 5-col grid (≥lg) to horizontal-scroll flex of 288px columns on smaller screens — no more "everything stacked in a single column" on tablets
+
+### Phase 12 — Deployment `[ ]`
+- [ ] Convex prod deployment (`npx convex deploy`)
+- [ ] Vercel project linked to repo
+- [ ] All env vars set in Vercel (Production + Preview)
+- [ ] Clerk production instance + domain (`app.<domain>`)
+- [ ] Configure custom subdomain in Vercel
+- [ ] Smoke test: sign up → create app → PRD save → extract stack → knowledge → features → chat
+- [ ] Add `robots.txt` (disallow if private beta)
+
+### Phase 13 — Polar Payments `[ ]` (later)
+- [ ] Polar product + pricing setup
+- [ ] Webhook handler (Convex HTTP action)
+- [ ] Gated features (e.g. apps > N require subscription)
+
+### Phase 14 — GitHub Import `[ ]` (later)
+- [ ] GitHub OAuth via Clerk OAuth connections
+- [ ] Repo picker
+- [ ] Read README / extract stack heuristically + Claude pass
+- [ ] Pre-fill new app from repo
+
+---
+
+## 7. Design System Notes
+
+**Tokens** (CSS vars in `globals.css`):
+```
+--radius: 14px            # cards
+--radius-sm: 10px         # inputs / chips
+--shadow-soft: 0 1px 2px rgba(16,24,40,.04), 0 4px 12px rgba(16,24,40,.04);
+--shadow-pop:  0 8px 24px rgba(16,24,40,.08);
+--bg: #fafafa
+--surface: #ffffff
+--border: #ececec
+--text: #0f1115
+--muted: #6b7280
+--accent: #111 (subject to brand pass)
+```
+
+**Spacing rule:** generous whitespace — minimum `p-6` on cards, `gap-6` in grids, `space-y-8` between page sections.
+
+**Animation rule:** ≤200ms, ease-out, transform/opacity only. No bounce. No spinning loaders > 1s — use skeletons.
+
+---
+
+## 8. Claude API Conventions
+
+- All Claude calls server-side. Model: `claude-opus-4-7`.
+- Use prompt caching for the long system prompts (PRD context block in chat is the prime candidate).
+- Always pass a JSON-output system instruction for non-chat features (extract stack, extract features, generate knowledge); validate with `zod` before persisting.
+- Stream only the chat endpoint. Generators (knowledge / features / stack) return full JSON.
+
+---
+
+## 9. Open Questions / Decisions
+
+- [x] Markdown editor: **picked `@uiw/react-md-editor`** in Phase 6 — simpler API, built-in toolbar + preview, ~200 KB dynamic-imported so no SSR cost on other pages.
+- [!] Should AI chat history be per-app (current plan) or per-app + per-thread? — start per-app, revisit.
+- [!] Custom kanban columns UI — Phase 10 or later? — later.
+- [!] File uploads for knowledge — start client-only (text read) before adding Convex file storage.
+
+---
+
+## 10. Session Log
+
+> Append a dated entry at the end of each Claude Code session.
+
+- **2026-05-23** — Project plan created. Scope locked. Next session: Phase 1 bootstrap.
+- **2026-05-23** — Phases 1 & 2 complete. Next.js 16.2.6 + React 19.2 + Tailwind v4 + Clerk 7 + Convex 1.39 wired. `npm run build` / `lint` / `typecheck` all clean against placeholder env. **Notes for next session:**
+  - Next 16 renamed `middleware.ts` → `proxy.ts` (already done).
+  - `eslint-config-next` 16 needed flat-config-direct import (FlatCompat had a circular ref).
+  - `lucide-react@1.x` dropped the `Github` icon — replaced with inline SVG in `components/icons.tsx`.
+  - Convex `_generated/*` are stubs; user must run `npx convex dev` before real local dev.
+  - Next session starts Phase 3 (Convex `apps` CRUD) + Phase 4 (3-step `/new` setup flow).
+- **2026-05-24** — Phases 3 & 4 complete + bonus Clerk webhook handler. `convex/apps.ts` + the `/new` 3-step wizard ship together with reusable `Button`/`Input`/`Chip`/`RadioCard`/`Stepper` primitives and shared `lib/stack-options.ts`. Build green, 7 routes. **Notes:**
+  - `JSX.Element` no longer global in React 19 — use `ReactElement` import.
+  - Placeholder `/app/[appId]/prd` page exists so the post-create redirect lands cleanly. Replaced in Phase 6.
+  - User has Clerk keys in `.env.local`; running `npx convex dev` will pick up `apps.ts`, `http.ts`, and the new internal user mutations automatically.
+  - Next session: Phase 5 (app shell — top tabs, app switcher, AI panel pullout) then Phase 6 (real PRD editor).
+- **2026-05-24** — Phase 5 complete. App shell lives in `components/app-shell/{app-shell,top-tabs,app-switcher,ai-panel}.tsx`. Sticky header w/ animated tab pill, dropdown app switcher, collapsible AI panel toggled by `⌘B` + persisted via localStorage. 11 routes built. **Notes:**
+  - React 19 ships a stricter `react-hooks/set-state-in-effect` rule — used `useSyncExternalStore` in `lib/use-local-storage.ts` instead of a setState-in-effect pattern.
+  - All four section pages (`/prd`, `/stack`, `/knowledge`, `/features`) currently render the shared `ComingSoonPanel`; PRD's becomes a real editor in Phase 6.
+  - Next session: Phase 6 (PRD editor — markdown editor, autosave w/ "Saved"/"Saving…" indicator, download .md).
+- **2026-05-24** — Phase 6 complete. PRD editor: `convex/prds.ts` (get/save), `components/prd-editor.tsx` w/ `@uiw/react-md-editor`, `SaveStatusPill`, 800ms debounced autosave, visibility-flush, .md download. Editor styles overridden in `globals.css` to match the design tokens. **Notes:**
+  - React 19's `react-hooks/refs` rule flags `ref.current = x` in render — moved to a `useEffect` (cheap, just an assignment).
+  - The Convex schema's `savingVersion` field increments on each save — useful later for surfacing per-save audit info, not currently shown in UI.
+  - Next session: Phase 7 (Stack page — view/edit the stack, "Extract from PRD" via Claude API). This is where `ANTHROPIC_API_KEY` becomes required.
+- **2026-05-24** — Phase 6.5 rename: **Skribe → Vibeify**. Logo letter S→V, wordmark, metadata, README, package name, localStorage keys, CSS class prefix all updated.
+- **2026-05-24** — Phase 7 complete. Stack page lives at `convex/stacks.ts` + `convex/aiStack.ts` (Node action) + `app/app/[appId]/stack/*` + reusable `StackPicker` + `Modal`. Setup flow now shares `StackPicker` (DRY). **Notes on Claude integration:**
+  - Used `messages.parse()` + `zodOutputFormat` for structured outputs — Claude's response is guaranteed valid against the zod schema, no manual JSON parsing or hallucination filtering needed.
+  - Zod `z.enum()` constrains each category to the allowed list, so Claude can't suggest unrecognized technologies.
+  - Convex action needs explicit return-type annotation (`Promise<ExtractedStack>`) to break circular type inference (Convex's `api` type includes the action being declared).
+  - Action uses `"use node"` — bundles separately, runs in Convex's Node runtime.
+  - Diff logic: additions-only. Builder is single-select so we never overwrite a manual choice; everything else does a set union.
+  - Reminder for user: `npx convex env set ANTHROPIC_API_KEY sk-ant-...` before testing.
+  - Next session: Phase 8 (Knowledge page — URL/upload/scratch + AI quick-create with PRD context). This is where `FIRECRAWL_API_KEY` becomes required.
+- **2026-05-24** — Phase 8 complete. Knowledge page lives at `convex/{knowledge,firecrawl,aiKnowledge}.ts` + `app/app/[appId]/knowledge/{page.tsx, knowledge-list-client.tsx, [docId]/...}`. **Notes:**
+  - Extracted `components/markdown-editor.tsx` — both PRD and knowledge editors now share the same `@uiw/react-md-editor` wrapper.
+  - All three Node actions (`aiStack`, `aiKnowledge`, `firecrawl`) need explicit `Promise<...>` return annotation to break Convex's circular type inference.
+  - Firecrawl uses raw `fetch` to the v1 endpoint — no SDK dependency needed.
+  - 12 routes built. Add-knowledge dropdown uses a custom click-outside pattern, same shape as `AppSwitcher`.
+  - Reminder for user: `npx convex env set FIRECRAWL_API_KEY fc-...` before testing URL imports. AI knowledge re-uses `ANTHROPIC_API_KEY` set in Phase 7.
+  - Next session: Phase 9 (Features page — Release view + Progress kanban with `@dnd-kit`, plus "Extract features from PRD" AI flow).
+- **2026-05-24** — Phase 9 complete. Features page = `convex/{releases,features,columns,aiFeatures}.ts` + `app/app/[appId]/features/{page,features-page-client,release-view,kanban-view,release-modal,feature-drawer}.tsx`. 12 routes built (same count as Phase 8 — the existing `features/` page got fleshed out). **Notes:**
+  - Used the React-19-recommended **"adjust state during render"** pattern (`if (sig !== prevSig) { setPrevSig(sig); setX(...) }`) instead of `useEffect`+`setState` for reconciling optimistic local state with server changes. This avoids the `react-hooks/set-state-in-effect` rule (same one that bit Phase 5).
+  - Kanban uses `closestCorners` collision detection (`closestCenter` works poorly for cross-column drag); `onDragOver` does cross-column shuffle while `onDragEnd` persists. Only changed columns get written to minimize mutations.
+  - `setColumnOrder` mutation accepts an ordered list of feature IDs for a target status and sets `status` + `columnOrder` for each — works for both within-column reorder and cross-column moves with a single API surface.
+  - Feature drawer reuses shared `MarkdownEditor` and `Modal` components.
+  - `aiFeatures.extractFromPrd` uses the same `messages.parse()` + `zodOutputFormat` pattern as `aiStack` — guaranteed JSON shape, no parsing fragility.
+  - Convex TypeScript narrowing through closures: had to capture `args.releaseId` into a local const before passing to `withIndex` callback (otherwise the union `Id<"releases"> | null | undefined` propagates through and the index rejects it).
+  - Next session: Phase 10 (AI assistant — wire up the left panel with streaming chat via Next route handler, context-aware system prompt that reads PRD/stack/features/knowledge).
+- **2026-05-24** — Phase 10 complete. AI assistant lives at `app/api/claude/chat/route.ts` + `convex/chatMessages.ts` + rewritten `components/app-shell/ai-panel.tsx`. 13 routes built (added `/api/claude/chat`). **Notes:**
+  - Auth pattern from Convex+Clerk docs: `auth()` in the Next route → `getToken({ template: "convex" })` → `new ConvexHttpClient(NEXT_PUBLIC_CONVEX_URL).setAuth(token)`. All Convex queries/mutations from the route then run as the authenticated user, so existing `requireAppAccess` ownership checks work transparently.
+  - SSE format: each frame is `data: <JSON>\n\n` — small custom parser in `handleSend` accumulates partial chunks across `reader.read()` calls and emits complete frames.
+  - The user message is persisted *before* the Claude call, the assistant message *after* the stream completes. Network drops or aborts lose the assistant response but never the user's input.
+  - Prompt caching: full system prompt (intro + context block) is marked `cache_control: ephemeral`. The context block is stable within a session, so subsequent turns hit the cache. Context invalidates when the user edits PRD/stack/features/knowledge — expected.
+  - Lint caught `Date.now()` calls in render (React 19's `react-hooks/purity` rule) — refactored from a synthetic `Doc<"chatMessages">` shape to a simple `ChatBubble({ role, content, streaming })` component to avoid timestamp construction in render.
+  - `useLayoutEffect` (not `useEffect`) for auto-scroll-to-bottom — runs before paint, no visible flash.
+  - `@uiw/react-markdown-preview` added as a direct dep (was already a transitive dep of the editor); dynamic-imported with `ssr: false` to keep bundle lean.
+  - Next session: Phase 11 (Polish — animations, empty states, keyboard shortcuts, loading skeletons review).
+- **2026-05-25** — Phase 11 complete. Polish pass: page transitions, missing empty states, mobile responsive for kanban, a11y nits. 13 routes still — no new pages. **Notes:**
+  - Welcome page now shows existing apps in a 3-up grid below the create cards (hidden when user has no apps — keeps first-time flow clean).
+  - Features page gets a proper empty state when both releases and features are empty — previously the user landed on a barren page with only "+ New release" as a CTA.
+  - Kanban: changed from `grid lg:grid-cols-5` to `flex overflow-x-auto pb-2 lg:grid lg:grid-cols-5` — on tablet/mobile you now get a horizontal-scroll lane of 288px columns instead of a 1-col stack.
+  - Most "polish" items from the plan were already implemented incrementally across earlier phases (tab pill animation, toasts, AI-panel `⌘B`, loading skeletons). Resisted scope creep — no command palette, no extra shortcuts.
+  - Next session: Phase 12 (Deployment — Convex prod deploy, Vercel project + env vars, Clerk production instance, smoke-test the whole flow).
