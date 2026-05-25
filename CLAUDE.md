@@ -11,3 +11,15 @@ Convex agent skills for common tasks can be installed by running
 `npx convex ai-files install`.
 
 <!-- convex-ai-end -->
+
+## UI Design Rules
+
+- Avoid generic AI-generated Tailwind layouts
+- Prioritize premium spacing and hierarchy
+- Use restrained motion and subtle transitions
+- Prefer dark layered surfaces
+- Use consistent spacing scale
+- Focus on Linear/Vercel/Raycast quality interactions
+- Add hover elevation and polished active states
+- Avoid excessive gradients and oversized rounded corners
+- Prioritize readability and developer-tool aesthetics

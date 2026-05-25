@@ -402,14 +402,24 @@ app/
 - [ ] `⌘K` command palette — deferred per plan
 - [x] **Responsive:** kanban switches from 5-col grid (≥lg) to horizontal-scroll flex of 288px columns on smaller screens — no more "everything stacked in a single column" on tablets
 
-### Phase 12 — Deployment `[ ]`
-- [ ] Convex prod deployment (`npx convex deploy`)
-- [ ] Vercel project linked to repo
-- [ ] All env vars set in Vercel (Production + Preview)
-- [ ] Clerk production instance + domain (`app.<domain>`)
-- [ ] Configure custom subdomain in Vercel
-- [ ] Smoke test: sign up → create app → PRD save → extract stack → knowledge → features → chat
-- [ ] Add `robots.txt` (disallow if private beta)
+### Phase 12 — Deployment `[~]`
+**Code-side artifacts:**
+- [x] `app/robots.ts` — Next.js `MetadataRoute.Robots` export disallowing all crawlers (Vibeify is a private workspace; lift when going public)
+- [x] Basic security headers in `next.config.ts` — `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `Referrer-Policy: strict-origin-when-cross-origin`, restrictive `Permissions-Policy`
+- [x] Production build verified clean (typecheck + lint + `next build` all green)
+- [x] `.env.example` rewritten with an env-var ownership matrix — every variable marked `[vercel]`, `[convex]`, or both
+- [x] README expanded with a full deployment walkthrough — Clerk prod instance, `npx convex deploy`, Convex prod env vars, Vercel project + env vars, atomic-deploy build-command option (`npx convex deploy --cmd 'npm run build'` with `CONVEX_DEPLOY_KEY`), custom subdomain, webhook re-config for prod, smoke-test checklist
+
+**Dashboard-side steps (user-blocked):**
+- [ ] Run `npx convex deploy` to create the `prod:` deployment
+- [ ] Set Convex prod env vars (`CLERK_JWT_ISSUER_DOMAIN`, `ANTHROPIC_API_KEY`, `FIRECRAWL_API_KEY`, optionally `CLERK_WEBHOOK_SECRET`)
+- [ ] Create the Clerk production instance + `convex` JWT template (copy issuer URL)
+- [ ] Push repo to GitHub
+- [ ] Vercel: import repo, set env vars, pick build command
+- [ ] Custom domain (`app.<domain>`) — DNS + add to Clerk Domains
+- [ ] Generate `CONVEX_DEPLOY_KEY` and paste into Vercel (if using atomic build command)
+- [ ] Re-register the Clerk webhook against the prod Convex deployment (if using it)
+- [ ] Run through the smoke-test checklist on the live URL
 
 ### Phase 13 — Polar Payments `[ ]` (later)
 - [ ] Polar product + pricing setup
@@ -527,3 +537,8 @@ app/
   - Kanban: changed from `grid lg:grid-cols-5` to `flex overflow-x-auto pb-2 lg:grid lg:grid-cols-5` — on tablet/mobile you now get a horizontal-scroll lane of 288px columns instead of a 1-col stack.
   - Most "polish" items from the plan were already implemented incrementally across earlier phases (tab pill animation, toasts, AI-panel `⌘B`, loading skeletons). Resisted scope creep — no command palette, no extra shortcuts.
   - Next session: Phase 12 (Deployment — Convex prod deploy, Vercel project + env vars, Clerk production instance, smoke-test the whole flow).
+- **2026-05-25** — Phase 12 code-side complete (dashboard steps need the user). Added `app/robots.ts`, security headers in `next.config.ts`, env-var ownership matrix in `.env.example`, full deployment walkthrough in README. Production build green. 14 routes now (added `/robots.txt`). **Notes:**
+  - The env-var split is the trickiest part of this deploy: Vercel holds Next-side keys (Clerk pub/secret, Convex URL, `ANTHROPIC_API_KEY` for the chat route), Convex holds backend keys (`ANTHROPIC_API_KEY` again for Node actions, `FIRECRAWL_API_KEY`, `CLERK_JWT_ISSUER_DOMAIN`, optional `CLERK_WEBHOOK_SECRET`). README has the full matrix.
+  - The atomic-deploy build-command option (`npx convex deploy --cmd 'npm run build'`) is recommended — backend + frontend ship together on every push. Requires `CONVEX_DEPLOY_KEY` in Vercel. Documented but not enforced (default `next build` works too if you deploy Convex separately).
+  - `robots.ts` disallows everything — flip when going public.
+  - Next session: Phase 13 (Polar payments — gated features). Or Phase 14 (GitHub import). Both are user-facing features deferred per plan.
