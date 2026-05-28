@@ -45,36 +45,45 @@ export function Modal({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: 0.15 }}
-          className="fixed inset-0 z-50 grid place-items-center bg-black/40 p-6 backdrop-blur-sm"
+          transition={{ duration: 0.18 }}
+          className="fixed inset-0 z-50 grid place-items-center bg-black/65 p-6 backdrop-blur-md"
           onClick={onClose}
           role="dialog"
           aria-modal="true"
           aria-labelledby={title ? "modal-title" : undefined}
         >
           <motion.div
-            initial={{ opacity: 0, y: 8, scale: 0.98 }}
+            initial={{ opacity: 0, y: 12, scale: 0.97 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 4, scale: 0.98 }}
-            transition={{ duration: 0.18, ease: "easeOut" }}
+            exit={{ opacity: 0, y: 6, scale: 0.98 }}
+            transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
             onClick={(e) => e.stopPropagation()}
             className={cn(
-              "card relative w-full max-w-xl bg-[var(--color-surface)] p-7 shadow-[var(--shadow-pop)]",
+              "relative w-full max-w-xl rounded-[var(--radius-xl)] border border-[var(--color-border-strong)] bg-[var(--color-panel-2)] p-7",
+              "shadow-[var(--shadow-3)]",
               className,
             )}
           >
+            {/* subtle top highlight */}
+            <span
+              aria-hidden
+              className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent"
+            />
             <button
               type="button"
               onClick={onClose}
               aria-label="Close"
-              className="absolute right-4 top-4 grid h-8 w-8 place-items-center rounded-[var(--radius-sm)] text-[var(--color-muted)] transition-colors hover:bg-[var(--color-subtle)] hover:text-[var(--color-text)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-text)]/15"
+              className="absolute right-3.5 top-3.5 grid h-8 w-8 place-items-center rounded-[var(--radius-sm)] text-[var(--color-muted)] transition-colors hover:bg-[var(--color-subtle)] hover:text-[var(--color-text)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--color-accent-glow)]"
             >
               <X className="h-4 w-4" />
             </button>
 
             {title ? (
-              <header className="mb-5 pr-8">
-                <h2 id="modal-title" className="font-display text-xl tracking-tight">
+              <header className="mb-5 pr-10">
+                <h2
+                  id="modal-title"
+                  className="font-display text-lg font-semibold tracking-tight text-[var(--color-text)]"
+                >
                   {title}
                 </h2>
                 {description ? (
@@ -83,7 +92,7 @@ export function Modal({
               </header>
             ) : null}
 
-            <div>{children}</div>
+            <div className="text-[var(--color-text)]">{children}</div>
 
             {footer ? (
               <footer className="mt-7 flex items-center justify-end gap-3">{footer}</footer>

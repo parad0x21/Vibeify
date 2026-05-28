@@ -27,6 +27,7 @@ import { toast } from "sonner";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import { cn } from "@/lib/utils";
+import { Badge } from "@/components/ui/badge";
 import type { ColumnDoc, FeatureDoc } from "./features-page-client";
 
 interface KanbanViewProps {
@@ -37,6 +38,14 @@ interface KanbanViewProps {
 }
 
 type FeaturesByStatus = Record<string, FeatureDoc[]>;
+
+const STATUS_DOT: Record<string, string> = {
+  backlog: "bg-[var(--color-muted)]",
+  in_progress: "bg-[var(--color-info)] shadow-[0_0_8px_rgba(34,211,238,0.5)]",
+  testing: "bg-[var(--color-warning)] shadow-[0_0_8px_rgba(245,158,11,0.5)]",
+  complete: "bg-[var(--color-success)] shadow-[0_0_8px_rgba(16,185,129,0.5)]",
+  live: "bg-[var(--color-accent)] shadow-[0_0_8px_var(--color-accent-glow)]",
+};
 
 export function KanbanView({
   appId,
@@ -56,8 +65,6 @@ export function KanbanView({
   );
   const columnKeys = useMemo(() => sortedColumns.map((c) => c.key), [sortedColumns]);
 
-  // Local kanban state — optimistic during drag, reconciled when the server
-  // state changes (via React's recommended "adjust state during render" pattern).
   const serverSig =
     columnKeys.join("|") +
     "#" +
@@ -89,7 +96,6 @@ export function KanbanView({
     return null;
   }
 
-  // Cross-column shuffle as user drags — gives the smooth "lands in target" feel
   function handleDragOver(event: DragOverEvent) {
     const { active, over } = event;
     if (!over) return;
@@ -99,7 +105,6 @@ export function KanbanView({
     const fromStatus = findColumnOfFeature(activeId);
     if (!fromStatus) return;
 
-    // `over.id` is either another feature id or a column container id ("col:<status>")
     const toStatus = overId.startsWith("col:")
       ? overId.slice(4)
       : findColumnOfFeature(overId);
@@ -144,7 +149,6 @@ export function KanbanView({
       }
     }
 
-    // Determine which columns changed vs. the original server state to minimize writes.
     const originalByStatus = bucketFeatures(features, columnKeys);
     const columnsToPersist = new Set<string>();
     for (const col of columnKeys) {
@@ -203,21 +207,26 @@ function Column({
 }) {
   const { setNodeRef, isOver } = useDroppable({ id: `col:${column.key}` });
   const itemIds = useMemo(() => features.map((f) => f._id), [features]);
+  const dotClass = STATUS_DOT[column.key] ?? STATUS_DOT.backlog;
 
   return (
     <div
       ref={setNodeRef}
       className={cn(
-        "flex min-h-[24rem] flex-col rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-bg)]/40 transition-colors",
-        isOver && "border-[var(--color-text)]/30 bg-[var(--color-subtle)]/40",
+        "flex min-h-[24rem] flex-col rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-panel)]/40 transition-all duration-200",
+        isOver &&
+          "border-[var(--color-accent)] bg-[color:var(--color-accent-soft)] shadow-[0_0_0_1px_var(--color-accent-soft)_inset,0_0_24px_var(--color-accent-glow)]",
       )}
     >
       <header className="flex items-center justify-between px-3 py-3">
         <div className="flex items-center gap-2">
-          <span className="text-sm font-medium">{column.label}</span>
-          <span className="rounded-full bg-[var(--color-subtle)] px-1.5 py-0.5 text-[10px] font-medium text-[var(--color-muted)]">
-            {features.length}
+          <span className={cn("h-1.5 w-1.5 rounded-full", dotClass)} aria-hidden />
+          <span className="text-[12px] font-semibold tracking-tight text-[var(--color-text)]">
+            {column.label}
           </span>
+          <Badge tone="neutral" size="sm">
+            {features.length}
+          </Badge>
         </div>
       </header>
       <SortableContext items={itemIds} strategy={verticalListSortingStrategy}>
@@ -289,15 +298,17 @@ function FeatureCard({
         }
       }}
       className={cn(
-        "card cursor-pointer p-3 transition-shadow",
+        "group relative cursor-pointer rounded-[var(--radius-md)] border bg-[var(--color-panel)] p-3 transition-all duration-150",
         dragging
-          ? "cursor-grabbing rotate-1 shadow-[var(--shadow-pop)]"
-          : "hover:shadow-[var(--shadow-soft)]",
+          ? "cursor-grabbing rotate-1 scale-[1.02] border-[var(--color-accent)] shadow-[var(--shadow-3),0_0_24px_var(--color-accent-glow)]"
+          : "border-[var(--color-border)] shadow-[var(--shadow-1)] hover:-translate-y-px hover:border-[var(--color-border-strong)] hover:shadow-[var(--shadow-2)]",
       )}
     >
-      <h3 className="line-clamp-3 text-sm font-medium leading-snug">{feature.name}</h3>
+      <h3 className="line-clamp-3 text-[13px] font-medium leading-snug text-[var(--color-text)]">
+        {feature.name}
+      </h3>
       {feature.description.trim().length > 0 ? (
-        <p className="mt-1.5 line-clamp-2 text-[11px] text-[var(--color-muted)]">
+        <p className="mt-1.5 line-clamp-2 text-[11px] leading-relaxed text-[var(--color-muted)]">
           {feature.description.replace(/[#*`>_-]/g, "").trim()}
         </p>
       ) : null}

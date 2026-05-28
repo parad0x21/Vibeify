@@ -16,17 +16,24 @@ export const Chip = forwardRef<HTMLButtonElement, ChipProps>(function Chip(
       type="button"
       aria-pressed={selected}
       className={cn(
-        "inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-sm font-medium",
+        "inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium",
         "border transition-all duration-150 ease-out",
+        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--color-accent-glow)]",
         selected
-          ? "border-[var(--color-text)] bg-[var(--color-text)] text-[var(--color-accent-fg)]"
-          : "border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-text)] hover:border-[var(--color-text)]/30 hover:bg-[var(--color-subtle)]",
-        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-text)]/15 focus-visible:ring-offset-2",
+          ? cn(
+              "border-[var(--color-accent)] text-[var(--color-text)]",
+              "bg-[color:var(--color-accent-soft)]",
+              "shadow-[0_0_0_1px_var(--color-accent-soft)_inset]",
+            )
+          : cn(
+              "border-[var(--color-border)] bg-[var(--color-panel-2)] text-[var(--color-muted)]",
+              "hover:border-[var(--color-border-strong)] hover:text-[var(--color-text)] hover:bg-[var(--color-subtle)]",
+            ),
         className,
       )}
       {...rest}
     >
-      {selected ? <Check className="h-3.5 w-3.5" /> : null}
+      {selected ? <Check className="h-3 w-3 text-[var(--color-accent)]" /> : null}
       {children}
     </button>
   );

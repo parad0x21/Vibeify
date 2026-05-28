@@ -3,14 +3,16 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useMutation, useQuery } from "convex/react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Trash2, X } from "lucide-react";
+import { Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { api } from "@/convex/_generated/api";
 import { Doc, Id } from "@/convex/_generated/dataModel";
 import { Button } from "@/components/ui/button";
+import { IconButton } from "@/components/ui/icon-button";
 import { MarkdownEditor } from "@/components/markdown-editor";
 import { Modal } from "@/components/ui/modal";
 import { SaveStatus, SaveStatusPill } from "@/components/save-status-pill";
+import { X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const AUTOSAVE_DEBOUNCE_MS = 800;
@@ -42,17 +44,17 @@ export function FeatureDrawer({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: 0.15 }}
-          className="fixed inset-0 z-50 bg-black/30"
+          transition={{ duration: 0.18 }}
+          className="fixed inset-0 z-50 bg-black/65 backdrop-blur-md"
           onClick={onClose}
         >
           <motion.aside
             initial={{ x: "100%" }}
             animate={{ x: 0 }}
             exit={{ x: "100%" }}
-            transition={{ duration: 0.22, ease: "easeOut" }}
+            transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
             onClick={(e) => e.stopPropagation()}
-            className="absolute right-0 top-0 flex h-full w-full max-w-2xl flex-col border-l border-[var(--color-border)] bg-[var(--color-surface)] shadow-[var(--shadow-pop)]"
+            className="absolute right-0 top-0 flex h-full w-full max-w-2xl flex-col border-l border-[var(--color-border-strong)] bg-[var(--color-panel)] shadow-[var(--shadow-3)]"
             role="dialog"
             aria-modal="true"
           >
@@ -97,10 +99,8 @@ function DrawerContent({
       <>
         <DrawerHeader onClose={onClose} />
         <div className="flex flex-1 flex-col items-center justify-center gap-2 text-center">
-          <h2 className="font-display text-lg">Feature not found</h2>
-          <p className="text-sm text-[var(--color-muted)]">
-            It may have been deleted.
-          </p>
+          <h2 className="font-display text-lg font-semibold">Feature not found</h2>
+          <p className="text-sm text-[var(--color-muted)]">It may have been deleted.</p>
         </div>
       </>
     );
@@ -125,15 +125,10 @@ function DrawerHeader({
   right?: React.ReactNode;
 }) {
   return (
-    <header className="flex h-14 shrink-0 items-center justify-between gap-2 border-b border-[var(--color-border)] px-4">
-      <button
-        type="button"
-        onClick={onClose}
-        aria-label="Close"
-        className="grid h-8 w-8 place-items-center rounded-[var(--radius-sm)] text-[var(--color-muted)] transition-colors hover:bg-[var(--color-subtle)] hover:text-[var(--color-text)]"
-      >
+    <header className="flex h-14 shrink-0 items-center justify-between gap-2 border-b border-[var(--color-border)] bg-[var(--color-panel)]/80 px-3 backdrop-blur-md">
+      <IconButton onClick={onClose} label="Close" size="md">
         <X className="h-4 w-4" />
-      </button>
+      </IconButton>
       <div className="flex items-center gap-2">{right}</div>
     </header>
   );
@@ -245,20 +240,19 @@ function FeatureEditor({
         right={
           <>
             <SaveStatusPill status={saveStatus} lastSaved={lastSaved} />
-            <Button
-              variant="ghost"
-              size="sm"
+            <IconButton
               onClick={() => setDeleteOpen(true)}
-              aria-label="Delete feature"
-              className="text-[var(--color-muted)] hover:bg-red-50 hover:text-red-600"
+              label="Delete feature"
+              size="md"
+              className="text-[var(--color-muted)] hover:bg-[rgba(244,63,94,0.10)] hover:text-[var(--color-danger)]"
             >
               <Trash2 className="h-4 w-4" />
-            </Button>
+            </IconButton>
           </>
         }
       />
 
-      <div className="flex flex-1 flex-col overflow-y-auto px-6 py-6">
+      <div className="flex flex-1 flex-col overflow-y-auto px-7 py-7">
         <input
           type="text"
           value={name}
@@ -268,11 +262,11 @@ function FeatureEditor({
             scheduleText(next, description);
           }}
           placeholder="Feature name"
-          className="w-full bg-transparent font-display text-2xl tracking-tight outline-none placeholder:text-[var(--color-muted)]"
+          className="w-full bg-transparent font-display text-[28px] font-semibold tracking-tight text-[var(--color-text)] outline-none placeholder:text-[var(--color-muted)]/60"
           maxLength={160}
         />
 
-        <div className="mt-4 grid gap-3 sm:grid-cols-2">
+        <div className="mt-5 grid gap-3 sm:grid-cols-2">
           <SelectField
             label="Status"
             value={status}
@@ -297,7 +291,7 @@ function FeatureEditor({
         </div>
 
         <div className="mt-6">
-          <label className="mb-2 block text-xs font-medium uppercase tracking-wide text-[var(--color-muted)]">
+          <label className="mb-2 block text-[10px] font-semibold uppercase tracking-[0.08em] text-[var(--color-muted)]">
             Description
           </label>
           <MarkdownEditor
@@ -322,10 +316,7 @@ function FeatureEditor({
             <Button variant="ghost" onClick={() => setDeleteOpen(false)}>
               Cancel
             </Button>
-            <Button
-              onClick={handleDelete}
-              className="bg-red-600 text-white hover:bg-red-500"
-            >
+            <Button variant="destructive" onClick={handleDelete}>
               <Trash2 className="h-4 w-4" />
               Delete
             </Button>
@@ -351,19 +342,28 @@ function SelectField({
 }) {
   return (
     <label className="block">
-      <span className="mb-1 block text-xs font-medium uppercase tracking-wide text-[var(--color-muted)]">
+      <span className="mb-1.5 block text-[10px] font-semibold uppercase tracking-[0.08em] text-[var(--color-muted)]">
         {label}
       </span>
       <select
         value={value}
         onChange={(e) => onChange(e.target.value)}
         className={cn(
-          "h-10 w-full rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface)] px-3 text-sm",
-          "transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-text)]/15 focus-visible:border-[var(--color-text)]/30",
+          "h-10 w-full appearance-none rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-panel-2)] px-3 text-sm text-[var(--color-text)]",
+          "transition-[border-color,box-shadow] hover:border-[var(--color-border-strong)]",
+          "focus-visible:outline-none focus-visible:border-[var(--color-accent)] focus-visible:ring-2 focus-visible:ring-[color:var(--color-accent-glow)]",
         )}
+        style={{
+          backgroundImage:
+            "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238a93a6' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'/></svg>\")",
+          backgroundRepeat: "no-repeat",
+          backgroundPosition: "right 0.75rem center",
+          backgroundSize: "12px",
+          paddingRight: "2rem",
+        }}
       >
         {options.map((opt) => (
-          <option key={opt.value} value={opt.value}>
+          <option key={opt.value} value={opt.value} className="bg-[var(--color-panel-2)] text-[var(--color-text)]">
             {opt.label}
           </option>
         ))}

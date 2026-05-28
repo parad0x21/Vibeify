@@ -19,11 +19,19 @@ import { useLocalStorage } from "@/lib/use-local-storage";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Modal } from "@/components/ui/modal";
+import { IconButton } from "@/components/ui/icon-button";
+import { Kbd } from "@/components/ui/kbd";
 
 const MarkdownPreview = dynamic(() => import("@uiw/react-markdown-preview"), {
   ssr: false,
   loading: () => null,
 });
+
+const STARTER_PROMPTS = [
+  "Summarize this app",
+  "What features should I build first?",
+  "Suggest a stack",
+] as const;
 
 export function AiPanel({ appId }: { appId: string | null }) {
   const [open, setOpen] = useLocalStorage<boolean>("vibeify.ai-panel.open", true);
@@ -42,7 +50,7 @@ export function AiPanel({ appId }: { appId: string | null }) {
   return (
     <aside
       className={cn(
-        "sticky top-0 flex h-screen shrink-0 flex-col border-r border-[var(--color-border)] bg-[var(--color-surface)]",
+        "sticky top-0 flex h-screen shrink-0 flex-col border-r border-[var(--color-border)] bg-[var(--color-panel)]",
         "transition-[width] duration-200 ease-out",
         open ? "w-96" : "w-14",
       )}
@@ -57,7 +65,7 @@ export function AiPanel({ appId }: { appId: string | null }) {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.15, ease: "easeOut" }}
+            transition={{ duration: 0.18, ease: "easeOut" }}
             className="flex min-h-0 flex-1 flex-col overflow-hidden"
           >
             {appId ? <ChatBody appId={appId} /> : <NoAppState />}
@@ -98,28 +106,37 @@ function PanelHeader({
     <div
       className={cn(
         "flex shrink-0 items-center border-b border-[var(--color-border)]",
-        open ? "h-16 justify-between px-4" : "h-16 justify-center",
+        open ? "h-14 justify-between px-3.5" : "h-14 justify-center",
       )}
     >
       {open ? (
         <>
-          <div className="flex items-center gap-2">
-            <div className="grid h-7 w-7 place-items-center rounded-[8px] bg-[var(--color-subtle)] text-[var(--color-text)]">
+          <div className="flex items-center gap-2.5">
+            <div
+              aria-hidden
+              className="relative grid h-7 w-7 place-items-center overflow-hidden rounded-[8px] bg-gradient-to-br from-[var(--color-accent-from)] to-[var(--color-accent-to)] text-white shadow-[var(--shadow-1)]"
+            >
+              <span className="pointer-events-none absolute inset-x-0 top-0 h-px bg-white/30" />
               <Sparkles className="h-3.5 w-3.5" />
             </div>
-            <span className="font-display text-sm">Assistant</span>
+            <div className="flex flex-col leading-tight">
+              <span className="font-display text-[13px] font-semibold tracking-tight text-[var(--color-text)]">
+                Assistant
+              </span>
+              <span className="text-[10px] font-medium tracking-tight text-[var(--color-muted)]">
+                Claude · streaming
+              </span>
+            </div>
           </div>
           <div className="flex items-center gap-1">
             {messages && messages.length > 0 ? (
-              <button
-                type="button"
+              <IconButton
                 onClick={() => setClearOpen(true)}
-                aria-label="Clear chat history"
-                title="Clear chat"
-                className="grid h-8 w-8 place-items-center rounded-[var(--radius-sm)] text-[var(--color-muted)] transition-colors hover:bg-[var(--color-subtle)] hover:text-[var(--color-text)]"
+                label="Clear chat history"
+                size="sm"
               >
                 <Trash2 className="h-3.5 w-3.5" />
-              </button>
+              </IconButton>
             ) : null}
             <ToggleButton open={open} onClick={onToggle} />
           </div>
@@ -138,12 +155,9 @@ function PanelHeader({
             <Button variant="ghost" onClick={() => setClearOpen(false)}>
               Cancel
             </Button>
-            <Button
-              onClick={handleConfirmClear}
-              className="bg-red-600 text-white hover:bg-red-500"
-            >
-              <Trash2 className="h-4 w-4" />
-              Clear
+            <Button variant="destructive" onClick={handleConfirmClear}>
+              <Trash2 className="h-3.5 w-3.5" />
+              Clear chat
             </Button>
           </>
         }
@@ -156,30 +170,34 @@ function PanelHeader({
 
 function ToggleButton({ open, onClick }: { open: boolean; onClick: () => void }) {
   return (
-    <button
-      type="button"
+    <IconButton
       onClick={onClick}
-      className="grid h-8 w-8 place-items-center rounded-[var(--radius-sm)] text-[var(--color-muted)] transition-colors hover:bg-[var(--color-subtle)] hover:text-[var(--color-text)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-text)]/15"
-      aria-label={open ? "Collapse assistant" : "Expand assistant"}
-      title={open ? "Collapse (⌘B)" : "Expand (⌘B)"}
+      label={open ? "Collapse assistant (⌘B)" : "Expand assistant (⌘B)"}
+      size="sm"
     >
       {open ? (
-        <PanelLeftClose className="h-4 w-4" />
+        <PanelLeftClose className="h-3.5 w-3.5" />
       ) : (
-        <PanelLeftOpen className="h-4 w-4" />
+        <PanelLeftOpen className="h-3.5 w-3.5" />
       )}
-    </button>
+    </IconButton>
   );
 }
 
 function NoAppState() {
   return (
-    <div className="flex flex-1 flex-col items-center justify-center gap-3 px-6 text-center">
-      <div className="grid h-12 w-12 place-items-center rounded-full bg-[var(--color-subtle)]">
-        <Sparkles className="h-5 w-5 text-[var(--color-muted)]" />
+    <div className="flex flex-1 flex-col items-center justify-center gap-4 px-6 text-center">
+      <div
+        aria-hidden
+        className="relative grid h-14 w-14 place-items-center overflow-hidden rounded-[var(--radius-lg)] bg-gradient-to-br from-[var(--color-accent-from)] to-[var(--color-accent-to)] text-white shadow-[var(--shadow-2)]"
+      >
+        <span className="pointer-events-none absolute inset-x-0 top-0 h-px bg-white/30" />
+        <Sparkles className="h-5 w-5" />
       </div>
       <div>
-        <div className="font-display text-sm">Your assistant</div>
+        <div className="font-display text-[15px] font-semibold tracking-tight text-[var(--color-text)]">
+          Your assistant
+        </div>
         <p className="mt-1 text-xs leading-relaxed text-[var(--color-muted)]">
           Open an app to start chatting.
         </p>
@@ -199,22 +217,20 @@ function ChatBody({ appId }: { appId: string }) {
   const abortRef = useRef<AbortController | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  // Auto-scroll to bottom on new content (reads, not writes — safe in effect).
   useLayoutEffect(() => {
     const el = scrollRef.current;
     if (el) el.scrollTop = el.scrollHeight;
   }, [messages?.length, streamingText]);
 
-  // Abort any in-flight request when the app changes or the panel unmounts.
   useEffect(() => {
     return () => {
       abortRef.current?.abort();
     };
   }, [appId]);
 
-  async function handleSend() {
-    const text = input.trim();
-    if (!text || isStreaming) return;
+  async function sendText(text: string) {
+    const trimmed = text.trim();
+    if (!trimmed || isStreaming) return;
     setInput("");
     setIsStreaming(true);
     setStreamingText("");
@@ -227,7 +243,7 @@ function ChatBody({ appId }: { appId: string }) {
       const response = await fetch("/api/claude/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ appId, message: text }),
+        body: JSON.stringify({ appId, message: trimmed }),
         signal: controller.signal,
       });
 
@@ -287,7 +303,7 @@ function ChatBody({ appId }: { appId: string }) {
   function handleKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
-      void handleSend();
+      void sendText(input);
     }
   }
 
@@ -298,7 +314,7 @@ function ChatBody({ appId }: { appId: string }) {
     <>
       <div ref={scrollRef} className="min-h-0 flex-1 overflow-y-auto px-3 py-4">
         {showEmpty ? (
-          <EmptyChat />
+          <EmptyChat onPick={(p) => void sendText(p)} />
         ) : (
           <div className="space-y-1">
             {messages?.map((m) => (
@@ -311,8 +327,8 @@ function ChatBody({ appId }: { appId: string }) {
         )}
       </div>
 
-      <div className="shrink-0 border-t border-[var(--color-border)] p-3">
-        <div className="relative">
+      <div className="shrink-0 border-t border-[var(--color-border)] bg-[var(--color-panel)]/80 p-3 backdrop-blur-sm">
+        <div className="group/input relative rounded-[var(--radius-md)] ring-1 ring-inset ring-[var(--color-border)] transition-all focus-within:ring-2 focus-within:ring-[var(--color-accent)]/50 focus-within:shadow-[0_0_0_4px_var(--color-accent-soft)]">
           <textarea
             value={input}
             onChange={(e) => setInput(e.target.value)}
@@ -321,22 +337,24 @@ function ChatBody({ appId }: { appId: string }) {
             rows={1}
             disabled={isStreaming}
             className={cn(
-              "w-full resize-none rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-bg)] py-2.5 pl-3.5 pr-10 text-sm",
+              "w-full resize-none rounded-[var(--radius-md)] bg-[var(--color-panel-2)] py-2.5 pl-3.5 pr-11 text-sm text-[var(--color-text)]",
               "min-h-[44px] max-h-32",
               "placeholder:text-[var(--color-muted)]",
-              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-text)]/15",
+              "focus:outline-none",
               "disabled:cursor-not-allowed disabled:opacity-60",
             )}
           />
           <button
             type="button"
-            onClick={() => void handleSend()}
+            onClick={() => void sendText(input)}
             disabled={isStreaming || input.trim().length === 0}
             aria-label="Send"
             className={cn(
-              "absolute right-1.5 top-1.5 grid h-8 w-8 place-items-center rounded-[var(--radius-sm)] transition-colors",
-              "bg-[var(--color-accent)] text-[var(--color-accent-fg)] hover:bg-[var(--color-accent)]/90",
-              "disabled:bg-[var(--color-subtle)] disabled:text-[var(--color-muted)]",
+              "absolute right-1.5 top-1.5 grid h-8 w-8 place-items-center rounded-[var(--radius-sm)] transition-all duration-150",
+              "bg-gradient-to-b from-[var(--color-accent-from)] to-[var(--color-accent-to)] text-white shadow-[var(--shadow-1)]",
+              "hover:-translate-y-px hover:shadow-[var(--shadow-2)] hover:brightness-110",
+              "active:translate-y-0 active:scale-[0.96]",
+              "disabled:bg-[var(--color-panel-2)] disabled:from-[var(--color-panel-2)] disabled:to-[var(--color-panel-2)] disabled:text-[var(--color-muted)] disabled:shadow-none disabled:hover:translate-y-0",
             )}
           >
             {isStreaming ? (
@@ -346,25 +364,46 @@ function ChatBody({ appId }: { appId: string }) {
             )}
           </button>
         </div>
-        <p className="mt-2 text-center text-[10px] text-[var(--color-muted)]">
-          The assistant sees your PRD, stack, features, and knowledge.
+        <p className="mt-2 flex items-center justify-center gap-1.5 text-center text-[10px] text-[var(--color-muted)]">
+          <Kbd>↵</Kbd> to send · <Kbd>⇧↵</Kbd> for newline
         </p>
       </div>
     </>
   );
 }
 
-function EmptyChat() {
+function EmptyChat({ onPick }: { onPick: (text: string) => void }) {
   return (
-    <div className="flex h-full flex-col items-center justify-center gap-3 px-6 pb-12 text-center">
-      <div className="grid h-12 w-12 place-items-center rounded-full bg-[var(--color-subtle)]">
-        <Sparkles className="h-5 w-5 text-[var(--color-muted)]" />
+    <div className="flex h-full flex-col items-center justify-center gap-4 px-6 pb-10 text-center">
+      <div
+        aria-hidden
+        className="relative grid h-14 w-14 place-items-center overflow-hidden rounded-[var(--radius-lg)] bg-gradient-to-br from-[var(--color-accent-from)] to-[var(--color-accent-to)] text-white shadow-[var(--shadow-2)]"
+      >
+        <span className="pointer-events-none absolute inset-x-0 top-0 h-px bg-white/30" />
+        <Sparkles className="h-5 w-5" />
       </div>
       <div>
-        <div className="font-display text-sm">Your assistant</div>
+        <div className="font-display text-[15px] font-semibold tracking-tight text-[var(--color-text)]">
+          How can I help?
+        </div>
         <p className="mt-1 text-xs leading-relaxed text-[var(--color-muted)]">
-          Ask anything about your PRD, stack, features, or research notes.
+          I have your PRD, stack, features, and notes in context.
         </p>
+      </div>
+      <div className="mt-1 flex w-full flex-col gap-1.5">
+        {STARTER_PROMPTS.map((prompt) => (
+          <button
+            key={prompt}
+            type="button"
+            onClick={() => onPick(prompt)}
+            className="group/sp w-full rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-panel-2)] px-3 py-2 text-left text-[12.5px] text-[var(--color-muted)] transition-all duration-150 hover:border-[var(--color-border-strong)] hover:bg-[var(--color-subtle)] hover:text-[var(--color-text)]"
+          >
+            <span className="font-medium">{prompt}</span>
+            <span className="float-right text-[var(--color-muted)] opacity-0 transition-opacity group-hover/sp:opacity-100">
+              →
+            </span>
+          </button>
+        ))}
       </div>
     </div>
   );
@@ -382,7 +421,7 @@ function ChatBubble({
   if (role === "user") {
     return (
       <div className="mb-3 flex justify-end">
-        <div className="max-w-[88%] whitespace-pre-wrap rounded-2xl bg-[var(--color-subtle)] px-3.5 py-2 text-sm text-[var(--color-text)]">
+        <div className="max-w-[88%] whitespace-pre-wrap rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-panel-2)] px-3.5 py-2 text-sm text-[var(--color-text)]">
           {content}
         </div>
       </div>
@@ -390,27 +429,38 @@ function ChatBubble({
   }
 
   return (
-    <div className="mb-4 flex justify-start">
+    <div className="mb-5 flex justify-start gap-2.5">
       <div
-        data-color-mode="light"
-        className="vibeify-chat-message max-w-[92%] text-sm text-[var(--color-text)]"
+        aria-hidden
+        className="mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-[6px] bg-gradient-to-br from-[var(--color-accent-from)] to-[var(--color-accent-to)] text-white shadow-[var(--shadow-1)]"
+      >
+        <Sparkles className="h-3 w-3" />
+      </div>
+      <div
+        data-color-mode="dark"
+        className="vibeify-chat-message min-w-0 flex-1 text-sm text-[var(--color-text)]"
       >
         {content.length > 0 ? (
-          <MarkdownPreview
-            source={content}
-            style={{ background: "transparent", fontSize: "13.5px" }}
-            wrapperElement={{ "data-color-mode": "light" }}
-          />
+          <>
+            <MarkdownPreview
+              source={content}
+              style={{ background: "transparent", fontSize: "13.5px" }}
+              wrapperElement={{ "data-color-mode": "dark" }}
+            />
+            {streaming ? (
+              <span
+                aria-hidden
+                className="ml-1 inline-block h-3 w-2 translate-y-0.5 animate-pulse rounded-sm bg-[var(--color-accent)] shadow-[0_0_8px_var(--color-accent-glow)]"
+              />
+            ) : null}
+          </>
         ) : (
-          <span className="inline-flex gap-1 text-[var(--color-muted)]">
+          <span className="inline-flex items-center gap-1 text-[var(--color-muted)]">
             <Dot delay={0} />
             <Dot delay={150} />
             <Dot delay={300} />
           </span>
         )}
-        {streaming && content.length > 0 ? (
-          <span className="ml-0.5 inline-block h-3 w-1 translate-y-0.5 animate-pulse bg-current" />
-        ) : null}
       </div>
     </div>
   );
@@ -419,7 +469,7 @@ function ChatBubble({
 function Dot({ delay }: { delay: number }) {
   return (
     <span
-      className="h-1.5 w-1.5 animate-bounce rounded-full bg-current"
+      className="h-1.5 w-1.5 animate-bounce rounded-full bg-[var(--color-accent)]"
       style={{ animationDelay: `${delay}ms` }}
     />
   );

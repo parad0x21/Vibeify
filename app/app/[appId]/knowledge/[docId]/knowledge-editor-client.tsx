@@ -9,6 +9,8 @@ import { toast } from "sonner";
 import { api } from "@/convex/_generated/api";
 import { Doc, Id } from "@/convex/_generated/dataModel";
 import { Button } from "@/components/ui/button";
+import { IconButton } from "@/components/ui/icon-button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { MarkdownEditor } from "@/components/markdown-editor";
 import { Modal } from "@/components/ui/modal";
 import { SaveStatus, SaveStatusPill } from "@/components/save-status-pill";
@@ -136,9 +138,9 @@ function DocEditor({ appId, doc }: { appId: string; doc: Doc<"knowledge"> }) {
     <section className="mx-auto max-w-4xl px-6 py-8">
       <Link
         href={`/app/${appId}/knowledge`}
-        className="mb-6 inline-flex items-center gap-1.5 text-sm text-[var(--color-muted)] transition-colors hover:text-[var(--color-text)]"
+        className="mb-6 inline-flex items-center gap-1.5 text-[12px] font-medium text-[var(--color-muted)] transition-colors hover:text-[var(--color-text)]"
       >
-        <ArrowLeft className="h-4 w-4" />
+        <ArrowLeft className="h-3.5 w-3.5" />
         Back to knowledge
       </Link>
 
@@ -149,7 +151,7 @@ function DocEditor({ appId, doc }: { appId: string; doc: Doc<"knowledge"> }) {
               href={doc.sourceUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="mb-2 inline-block max-w-full truncate text-[11px] font-medium uppercase tracking-wide text-[var(--color-muted)] hover:text-[var(--color-text)]"
+              className="mb-2 inline-block max-w-full truncate text-[10px] font-semibold uppercase tracking-[0.08em] text-[var(--color-muted)] hover:text-[var(--color-accent)]"
             >
               Source · {doc.sourceUrl}
             </a>
@@ -159,25 +161,24 @@ function DocEditor({ appId, doc }: { appId: string; doc: Doc<"knowledge"> }) {
             value={title}
             onChange={handleTitleChange}
             placeholder="Untitled"
-            className="w-full bg-transparent font-display text-3xl tracking-tight outline-none placeholder:text-[var(--color-muted)]"
+            className="w-full bg-transparent font-display text-[28px] font-semibold tracking-tight text-[var(--color-text)] outline-none placeholder:text-[var(--color-muted)]/60"
             maxLength={200}
           />
         </div>
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-2">
           <SaveStatusPill status={status} lastSaved={lastSaved} />
           <Button variant="secondary" size="sm" onClick={handleDownload}>
-            <Download className="h-4 w-4" />
+            <Download className="h-3.5 w-3.5" />
             Download
           </Button>
-          <Button
-            variant="ghost"
-            size="sm"
+          <IconButton
             onClick={() => setDeleteOpen(true)}
-            aria-label="Delete"
-            className="text-[var(--color-muted)] hover:bg-red-50 hover:text-red-600"
+            label="Delete"
+            size="md"
+            className="text-[var(--color-muted)] hover:bg-[rgba(244,63,94,0.10)] hover:text-[var(--color-danger)]"
           >
             <Trash2 className="h-4 w-4" />
-          </Button>
+          </IconButton>
         </div>
       </header>
 
@@ -197,10 +198,7 @@ function DocEditor({ appId, doc }: { appId: string; doc: Doc<"knowledge"> }) {
             <Button variant="ghost" onClick={() => setDeleteOpen(false)}>
               Cancel
             </Button>
-            <Button
-              onClick={handleConfirmDelete}
-              className="bg-red-600 text-white hover:bg-red-500"
-            >
+            <Button variant="destructive" onClick={handleConfirmDelete}>
               <Trash2 className="h-4 w-4" />
               Delete
             </Button>
@@ -217,13 +215,15 @@ function NotFound({ appId }: { appId: string }) {
   return (
     <section className="mx-auto grid min-h-[60vh] max-w-2xl place-items-center px-6 text-center">
       <div>
-        <h1 className="font-display text-2xl">Knowledge doc not found</h1>
+        <h1 className="font-display text-2xl font-semibold tracking-tight text-[var(--color-text)]">
+          Knowledge doc not found
+        </h1>
         <p className="mt-1 text-sm text-[var(--color-muted)]">
           It may have been deleted, or you don&apos;t have access.
         </p>
         <Link
           href={`/app/${appId}/knowledge`}
-          className="mt-4 inline-block text-sm font-medium text-[var(--color-text)] underline-offset-4 hover:underline"
+          className="mt-5 inline-flex items-center gap-1.5 rounded-[var(--radius-md)] bg-[var(--color-panel-2)] px-3.5 py-2 text-sm font-medium text-[var(--color-text)] ring-1 ring-inset ring-[var(--color-border-strong)] transition-colors hover:bg-[var(--color-subtle)]"
         >
           Back to knowledge
         </Link>
@@ -235,15 +235,15 @@ function NotFound({ appId }: { appId: string }) {
 function EditorSkeleton() {
   return (
     <section className="mx-auto max-w-4xl px-6 py-8">
-      <div className="mb-6 h-4 w-32 animate-pulse rounded bg-[var(--color-subtle)]" />
+      <Skeleton className="mb-6 h-4 w-32 rounded" />
       <div className="mb-6 flex items-end justify-between gap-4">
         <div className="space-y-2">
-          <div className="h-3 w-40 animate-pulse rounded bg-[var(--color-subtle)]" />
-          <div className="h-9 w-72 animate-pulse rounded bg-[var(--color-subtle)]" />
+          <Skeleton className="h-3 w-40 rounded" />
+          <Skeleton className="h-9 w-72 rounded" />
         </div>
-        <div className="h-8 w-28 animate-pulse rounded-full bg-[var(--color-subtle)]" />
+        <Skeleton className="h-8 w-28 rounded-full" />
       </div>
-      <div className="h-[560px] animate-pulse rounded-[var(--radius-lg)] bg-[var(--color-subtle)]" />
+      <Skeleton className="h-[560px] rounded-[var(--radius-lg)]" />
     </section>
   );
 }

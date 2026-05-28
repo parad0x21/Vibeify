@@ -4,6 +4,7 @@ import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import { PrdEditor } from "@/components/prd-editor";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export function PrdPageClient({ appId }: { appId: string }) {
   const typedAppId = appId as Id<"apps">;
@@ -13,7 +14,6 @@ export function PrdPageClient({ appId }: { appId: string }) {
   if (app === undefined || prd === undefined) {
     return <PrdSkeleton />;
   }
-  // Shell handles app-not-found; bail if PRD row is somehow missing too.
   if (!app || !prd) return null;
 
   return (
@@ -32,12 +32,12 @@ function PrdSkeleton() {
     <section className="mx-auto max-w-4xl px-6 py-8">
       <div className="mb-6 flex items-end justify-between gap-4">
         <div className="space-y-2">
-          <div className="h-3 w-20 animate-pulse rounded bg-[var(--color-subtle)]" />
-          <div className="h-8 w-32 animate-pulse rounded bg-[var(--color-subtle)]" />
+          <Skeleton className="h-3 w-20 rounded" />
+          <Skeleton className="h-8 w-32 rounded" />
         </div>
-        <div className="h-8 w-28 animate-pulse rounded-full bg-[var(--color-subtle)]" />
+        <Skeleton className="h-8 w-28 rounded-full" />
       </div>
-      <div className="h-[560px] animate-pulse rounded-[var(--radius-lg)] bg-[var(--color-subtle)]" />
+      <Skeleton className="h-[560px] rounded-[var(--radius-lg)]" />
     </section>
   );
 }

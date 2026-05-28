@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useMutation } from "convex/react";
 import { Download } from "lucide-react";
+import { motion } from "framer-motion";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import { Button } from "@/components/ui/button";
@@ -65,7 +66,6 @@ export function PrdEditor({
     [flush],
   );
 
-  // Flush any pending save when the tab is hidden or the component unmounts.
   useEffect(() => {
     function flushIfPending() {
       if (timerRef.current !== null) {
@@ -98,21 +98,28 @@ export function PrdEditor({
 
   return (
     <section className="mx-auto max-w-4xl px-6 py-8">
-      <header className="mb-6 flex flex-wrap items-end justify-between gap-4">
+      <motion.header
+        initial={{ opacity: 0, y: 6 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.25, ease: "easeOut" }}
+        className="mb-6 flex flex-wrap items-end justify-between gap-4"
+      >
         <div>
-          <div className="text-[11px] font-medium uppercase tracking-wide text-[var(--color-muted)]">
+          <div className="text-[10px] font-semibold uppercase tracking-[0.08em] text-[var(--color-muted)]">
             {appName}
           </div>
-          <h1 className="mt-1 font-display text-3xl tracking-tight">PRD</h1>
+          <h1 className="mt-1 font-display text-[28px] font-semibold tracking-tight text-[var(--color-text)]">
+            PRD
+          </h1>
         </div>
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-2">
           <SaveStatusPill status={status} lastSaved={lastSaved} />
           <Button variant="secondary" size="sm" onClick={handleDownload}>
-            <Download className="h-4 w-4" />
+            <Download className="h-3.5 w-3.5" />
             Download .md
           </Button>
         </div>
-      </header>
+      </motion.header>
 
       <MarkdownEditor
         value={content}

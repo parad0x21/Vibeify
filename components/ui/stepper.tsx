@@ -1,3 +1,7 @@
+"use client";
+
+import { Check } from "lucide-react";
+import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 
 export interface StepperProps {
@@ -7,32 +11,32 @@ export interface StepperProps {
 
 export function Stepper({ steps, current }: StepperProps) {
   return (
-    <div className="flex items-center gap-3">
+    <div className="flex items-center gap-2.5">
       {steps.map((label, i) => {
         const isActive = i === current;
         const isComplete = i < current;
         return (
-          <div key={label} className="flex items-center gap-3">
+          <div key={label} className="flex items-center gap-2.5">
             <div className="flex items-center gap-2">
               <div
                 className={cn(
-                  "grid h-6 w-6 place-items-center rounded-full text-[10px] font-medium transition-colors",
+                  "relative grid h-6 w-6 place-items-center rounded-full text-[10px] font-semibold transition-all duration-200 ease-out",
                   isActive
-                    ? "bg-[var(--color-text)] text-[var(--color-accent-fg)]"
+                    ? "bg-gradient-to-b from-[var(--color-accent-from)] to-[var(--color-accent-to)] text-white shadow-[var(--shadow-glow)]"
                     : isComplete
-                      ? "bg-[var(--color-text)]/80 text-[var(--color-accent-fg)]"
-                      : "bg-[var(--color-subtle)] text-[var(--color-muted)]",
+                      ? "bg-[color:var(--color-accent-soft)] text-[var(--color-accent)] ring-1 ring-inset ring-[var(--color-accent)]/30"
+                      : "bg-[var(--color-panel-2)] text-[var(--color-muted)] ring-1 ring-inset ring-[var(--color-border)]",
                 )}
               >
-                {i + 1}
+                {isComplete ? <Check className="h-3 w-3" /> : i + 1}
               </div>
               <span
                 className={cn(
-                  "text-xs font-medium",
+                  "text-xs font-medium tracking-tight",
                   isActive
                     ? "text-[var(--color-text)]"
                     : isComplete
-                      ? "text-[var(--color-text)]/70"
+                      ? "text-[var(--color-text)]/80"
                       : "text-[var(--color-muted)]",
                 )}
               >
@@ -40,12 +44,14 @@ export function Stepper({ steps, current }: StepperProps) {
               </span>
             </div>
             {i < steps.length - 1 ? (
-              <div
-                className={cn(
-                  "h-px w-10 transition-colors",
-                  isComplete ? "bg-[var(--color-text)]/40" : "bg-[var(--color-border)]",
-                )}
-              />
+              <div className="relative h-px w-10 overflow-hidden bg-[var(--color-border)]">
+                <motion.div
+                  initial={false}
+                  animate={{ width: isComplete ? "100%" : "0%" }}
+                  transition={{ duration: 0.4, ease: "easeOut" }}
+                  className="absolute inset-y-0 left-0 bg-gradient-to-r from-[var(--color-accent-from)] to-[var(--color-accent-to)]"
+                />
+              </div>
             ) : null}
           </div>
         );

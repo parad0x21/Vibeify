@@ -3,11 +3,13 @@
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { useAction, useMutation, useQuery } from "convex/react";
 import { Sparkles } from "lucide-react";
+import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import { Button } from "@/components/ui/button";
 import { Modal } from "@/components/ui/modal";
+import { Skeleton } from "@/components/ui/skeleton";
 import { SaveStatus, SaveStatusPill } from "@/components/save-status-pill";
 import { StackPicker } from "@/components/stack-picker";
 import { StackSelection } from "@/lib/stack-options";
@@ -113,14 +115,21 @@ function StackEditor({
 
   return (
     <section className="mx-auto max-w-4xl px-6 py-8">
-      <header className="mb-8 flex flex-wrap items-end justify-between gap-4">
+      <motion.header
+        initial={{ opacity: 0, y: 6 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.25, ease: "easeOut" }}
+        className="mb-8 flex flex-wrap items-end justify-between gap-4"
+      >
         <div>
-          <div className="text-[11px] font-medium uppercase tracking-wide text-[var(--color-muted)]">
+          <div className="text-[10px] font-semibold uppercase tracking-[0.08em] text-[var(--color-muted)]">
             {appName}
           </div>
-          <h1 className="mt-1 font-display text-3xl tracking-tight">Stack</h1>
+          <h1 className="mt-1 font-display text-[28px] font-semibold tracking-tight text-[var(--color-text)]">
+            Stack
+          </h1>
         </div>
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-2">
           <SaveStatusPill status={status} lastSaved={lastSaved} />
           <Button
             variant="secondary"
@@ -128,13 +137,17 @@ function StackEditor({
             onClick={handleExtract}
             disabled={isExtracting}
           >
-            <Sparkles className="h-4 w-4" />
+            <Sparkles className="h-3.5 w-3.5 text-[var(--color-accent)]" />
             {isExtracting ? "Extracting…" : "Extract from PRD"}
           </Button>
         </div>
-      </header>
+      </motion.header>
 
-      <div className="card p-7">
+      <div className="relative overflow-hidden rounded-[var(--radius-xl)] border border-[var(--color-border)] bg-[var(--color-panel)] p-7 shadow-[var(--shadow-1)]">
+        <span
+          aria-hidden
+          className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/6 to-transparent"
+        />
         <StackPicker value={draft} onChange={scheduleSave} />
       </div>
 
@@ -224,14 +237,14 @@ function DiffBody({ diff }: { diff: StackDiff }) {
 function DiffRow({ label, items }: { label: string; items: string[] }) {
   return (
     <div className="flex items-start gap-4">
-      <div className="w-28 shrink-0 text-xs font-medium uppercase tracking-wide text-[var(--color-muted)]">
+      <div className="w-28 shrink-0 text-[10px] font-semibold uppercase tracking-[0.08em] text-[var(--color-muted)]">
         {label}
       </div>
       <div className="flex flex-wrap gap-1.5">
         {items.map((item) => (
           <span
             key={item}
-            className="inline-flex items-center gap-1 rounded-full border border-amber-300 bg-amber-50 px-2.5 py-1 text-xs font-medium text-amber-900"
+            className="inline-flex items-center gap-1 rounded-full border border-[var(--color-accent)]/40 bg-[color:var(--color-accent-soft)] px-2.5 py-1 text-xs font-medium text-[var(--color-accent)]"
           >
             + {item}
           </span>
@@ -246,21 +259,18 @@ function StackSkeleton() {
     <section className="mx-auto max-w-4xl px-6 py-8">
       <div className="mb-8 flex items-end justify-between gap-4">
         <div className="space-y-2">
-          <div className="h-3 w-20 animate-pulse rounded bg-[var(--color-subtle)]" />
-          <div className="h-8 w-32 animate-pulse rounded bg-[var(--color-subtle)]" />
+          <Skeleton className="h-3 w-20 rounded" />
+          <Skeleton className="h-8 w-32 rounded" />
         </div>
-        <div className="h-8 w-32 animate-pulse rounded-full bg-[var(--color-subtle)]" />
+        <Skeleton className="h-8 w-32 rounded-full" />
       </div>
-      <div className="card space-y-8 p-7">
+      <div className="space-y-7 rounded-[var(--radius-xl)] border border-[var(--color-border)] bg-[var(--color-panel)] p-7 shadow-[var(--shadow-1)]">
         {Array.from({ length: 6 }).map((_, i) => (
           <div key={i} className="space-y-2.5">
-            <div className="h-4 w-24 animate-pulse rounded bg-[var(--color-subtle)]" />
+            <Skeleton className="h-3 w-24 rounded" />
             <div className="flex gap-2">
               {Array.from({ length: 4 }).map((_, j) => (
-                <div
-                  key={j}
-                  className="h-8 w-20 animate-pulse rounded-full bg-[var(--color-subtle)]"
-                />
+                <Skeleton key={j} className="h-7 w-20 rounded-full" />
               ))}
             </div>
           </div>
@@ -281,11 +291,6 @@ function toServerInput(stack: StackSelection) {
   };
 }
 
-/**
- * Additions-only diff: never proposes removing anything the user already has.
- * Builder is single-select, so we only propose a builder when the user hasn't
- * set one — never overwrite a manual choice.
- */
 function computeDiff(current: StackSelection, suggested: StackSelection): StackDiff {
   return {
     builder: !current.builder && suggested.builder ? suggested.builder : null,

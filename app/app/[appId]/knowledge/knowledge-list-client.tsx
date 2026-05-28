@@ -4,7 +4,7 @@ import { ChangeEvent, useRef, useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAction, useMutation, useQuery } from "convex/react";
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import {
   BookOpen,
   DollarSign,
@@ -23,9 +23,13 @@ import { Doc, Id } from "@/convex/_generated/dataModel";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Modal } from "@/components/ui/modal";
+import { Badge } from "@/components/ui/badge";
+import { IconButton } from "@/components/ui/icon-button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { cn, formatRelative } from "@/lib/utils";
 
 type KnowledgeSource = Doc<"knowledge">["source"];
+type BadgeTone = "neutral" | "info" | "success" | "warning" | "danger" | "accent";
 
 const SOURCE_LABEL: Record<KnowledgeSource, string> = {
   url: "URL",
@@ -36,13 +40,13 @@ const SOURCE_LABEL: Record<KnowledgeSource, string> = {
   ai_persona: "AI · Persona",
 };
 
-const SOURCE_TONE: Record<KnowledgeSource, string> = {
-  url: "bg-blue-50 text-blue-700 border-blue-100",
-  upload: "bg-zinc-50 text-zinc-700 border-zinc-200",
-  scratch: "bg-zinc-50 text-zinc-700 border-zinc-200",
-  ai_pricing: "bg-amber-50 text-amber-800 border-amber-100",
-  ai_market: "bg-emerald-50 text-emerald-800 border-emerald-100",
-  ai_persona: "bg-violet-50 text-violet-800 border-violet-100",
+const SOURCE_TONE: Record<KnowledgeSource, BadgeTone> = {
+  url: "info",
+  upload: "neutral",
+  scratch: "neutral",
+  ai_pricing: "warning",
+  ai_market: "success",
+  ai_persona: "accent",
 };
 
 const AI_QUICK_CREATES: Array<{
@@ -82,9 +86,7 @@ export function KnowledgeListClient({ appId }: { appId: string }) {
 
   const [urlModalOpen, setUrlModalOpen] = useState(false);
   const [urlInput, setUrlInput] = useState("");
-  const [pendingDeletion, setPendingDeletion] = useState<Doc<"knowledge"> | null>(
-    null,
-  );
+  const [pendingDeletion, setPendingDeletion] = useState<Doc<"knowledge"> | null>(null);
   const [scraping, startScrape] = useTransition();
   const [generatingKind, setGeneratingKind] = useState<
     "ai_pricing" | "ai_market" | "ai_persona" | null
@@ -144,9 +146,7 @@ export function KnowledgeListClient({ appId }: { appId: string }) {
         setUrlInput("");
         router.push(`/app/${appId}/knowledge/${id}`);
       } catch (err) {
-        toast.error(
-          err instanceof Error ? err.message : "Could not scrape that URL",
-        );
+        toast.error(err instanceof Error ? err.message : "Could not scrape that URL");
       }
     });
   }
@@ -176,9 +176,16 @@ export function KnowledgeListClient({ appId }: { appId: string }) {
 
   return (
     <section className="mx-auto max-w-6xl px-6 py-8">
-      <header className="mb-8 flex flex-wrap items-end justify-between gap-4">
+      <motion.header
+        initial={{ opacity: 0, y: 6 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.25, ease: "easeOut" }}
+        className="mb-8 flex flex-wrap items-end justify-between gap-4"
+      >
         <div>
-          <h1 className="font-display text-3xl tracking-tight">Knowledge</h1>
+          <h1 className="font-display text-[28px] font-semibold tracking-tight text-[var(--color-text)]">
+            Knowledge
+          </h1>
           <p className="mt-1 text-sm text-[var(--color-muted)]">
             Reference docs your AI assistant draws from.
           </p>
@@ -188,7 +195,7 @@ export function KnowledgeListClient({ appId }: { appId: string }) {
           onUrl={() => setUrlModalOpen(true)}
           onUpload={handleUploadClick}
         />
-      </header>
+      </motion.header>
 
       <input
         ref={fileInputRef}
@@ -199,10 +206,8 @@ export function KnowledgeListClient({ appId }: { appId: string }) {
       />
 
       <section className="mb-10">
-        <h2 className="mb-3 text-xs font-medium uppercase tracking-wide text-[var(--color-muted)]">
-          Quick create with AI
-        </h2>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <SectionLabel>Quick create with AI</SectionLabel>
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {AI_QUICK_CREATES.map((item) => {
             const Icon = item.icon;
             const isLoading = generatingKind === item.kind;
@@ -213,21 +218,35 @@ export function KnowledgeListClient({ appId }: { appId: string }) {
                 onClick={() => handleAiGenerate(item.kind)}
                 disabled={generatingKind !== null}
                 className={cn(
-                  "card group flex flex-col items-start gap-3 p-5 text-left transition-all",
-                  "hover:shadow-[var(--shadow-pop)] hover:border-[var(--color-text)]/30",
-                  "disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:shadow-[var(--shadow-soft)]",
+                  "group relative flex flex-col items-start gap-3 overflow-hidden rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-panel)] p-5 text-left shadow-[var(--shadow-1)] transition-all duration-200",
+                  "hover:-translate-y-0.5 hover:border-[var(--color-border-strong)] hover:bg-[var(--color-panel-2)] hover:shadow-[var(--shadow-2)]",
+                  "disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0",
                 )}
               >
-                <div className="grid h-9 w-9 place-items-center rounded-[10px] bg-[var(--color-subtle)] text-[var(--color-text)] transition-colors group-hover:bg-[var(--color-accent)] group-hover:text-[var(--color-accent-fg)]">
+                <span
+                  aria-hidden
+                  className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+                  style={{
+                    background:
+                      "radial-gradient(400px 200px at 50% 0%, rgba(99,102,241,0.08), transparent 70%)",
+                  }}
+                />
+                <div className="relative grid h-9 w-9 place-items-center overflow-hidden rounded-[var(--radius-md)] bg-gradient-to-br from-[var(--color-accent-from)] to-[var(--color-accent-to)] text-white shadow-[var(--shadow-1)]">
+                  <span
+                    aria-hidden
+                    className="pointer-events-none absolute inset-x-0 top-0 h-px bg-white/30"
+                  />
                   <Icon className="h-4 w-4" />
                 </div>
-                <div className="flex-1">
-                  <div className="font-display text-base">{item.label}</div>
-                  <p className="mt-1 text-xs text-[var(--color-muted)]">
+                <div className="relative flex-1">
+                  <div className="font-display text-[15px] font-semibold tracking-tight text-[var(--color-text)]">
+                    {item.label}
+                  </div>
+                  <p className="mt-1 text-xs leading-relaxed text-[var(--color-muted)]">
                     {item.description}
                   </p>
                 </div>
-                <div className="flex items-center gap-1 text-[11px] font-medium text-[var(--color-muted)]">
+                <div className="relative flex items-center gap-1 text-[10px] font-medium tracking-tight text-[var(--color-accent)]">
                   <Sparkles className="h-3 w-3" />
                   {isLoading ? "Generating…" : "Generate from PRD"}
                 </div>
@@ -238,15 +257,13 @@ export function KnowledgeListClient({ appId }: { appId: string }) {
       </section>
 
       <section>
-        <h2 className="mb-3 text-xs font-medium uppercase tracking-wide text-[var(--color-muted)]">
-          Documents
-        </h2>
+        <SectionLabel>Documents</SectionLabel>
         {docs === undefined ? (
           <DocsSkeleton />
         ) : docs.length === 0 ? (
           <EmptyDocs />
         ) : (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {docs.map((doc) => (
               <DocCard
                 key={doc._id}
@@ -308,10 +325,7 @@ export function KnowledgeListClient({ appId }: { appId: string }) {
             <Button variant="ghost" onClick={() => setPendingDeletion(null)}>
               Cancel
             </Button>
-            <Button
-              onClick={handleConfirmDelete}
-              className="bg-red-600 text-white hover:bg-red-500"
-            >
+            <Button variant="destructive" onClick={handleConfirmDelete}>
               <Trash2 className="h-4 w-4" />
               Delete
             </Button>
@@ -321,6 +335,17 @@ export function KnowledgeListClient({ appId }: { appId: string }) {
         <></>
       </Modal>
     </section>
+  );
+}
+
+function SectionLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="mb-3 flex items-center gap-3">
+      <h2 className="text-[10px] font-semibold uppercase tracking-[0.08em] text-[var(--color-muted)]">
+        {children}
+      </h2>
+      <div className="h-px flex-1 bg-[var(--color-border)]" />
+    </div>
   );
 }
 
@@ -341,43 +366,41 @@ function AddKnowledgeMenu({
     action();
   }
 
-  // close on outside click
-  function onBackdrop() {
-    setOpen(false);
-  }
-
   return (
     <div ref={ref} className="relative">
-      <Button onClick={() => setOpen((v) => !v)}>
-        <Plus className="h-4 w-4" />
+      <Button size="sm" onClick={() => setOpen((v) => !v)}>
+        <Plus className="h-3.5 w-3.5" />
         Add knowledge
       </Button>
-      {open ? (
-        <>
-          <div
-            className="fixed inset-0 z-30"
-            onClick={onBackdrop}
-            aria-hidden="true"
-          />
-          <motion.div
-            initial={{ opacity: 0, y: -4, scale: 0.98 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            transition={{ duration: 0.12, ease: "easeOut" }}
-            className="absolute right-0 top-full z-40 mt-2 w-60 origin-top-right overflow-hidden rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-surface)] p-1.5 shadow-[var(--shadow-pop)]"
-            role="menu"
-          >
-            <MenuItem icon={<FileText className="h-4 w-4" />} onClick={() => handle(onBlank)}>
-              Blank doc
-            </MenuItem>
-            <MenuItem icon={<Link2 className="h-4 w-4" />} onClick={() => handle(onUrl)}>
-              From URL
-            </MenuItem>
-            <MenuItem icon={<Upload className="h-4 w-4" />} onClick={() => handle(onUpload)}>
-              Upload markdown file
-            </MenuItem>
-          </motion.div>
-        </>
-      ) : null}
+      <AnimatePresence>
+        {open ? (
+          <>
+            <div
+              className="fixed inset-0 z-30"
+              onClick={() => setOpen(false)}
+              aria-hidden="true"
+            />
+            <motion.div
+              initial={{ opacity: 0, y: -6, scale: 0.97 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -4, scale: 0.98 }}
+              transition={{ duration: 0.16, ease: [0.22, 1, 0.36, 1] }}
+              className="absolute right-0 top-full z-40 mt-2 w-60 origin-top-right overflow-hidden rounded-[var(--radius-lg)] border border-[var(--color-border-strong)] bg-[var(--color-panel-2)] p-1.5 shadow-[var(--shadow-3)]"
+              role="menu"
+            >
+              <MenuItem icon={<FileText className="h-4 w-4" />} onClick={() => handle(onBlank)}>
+                Blank doc
+              </MenuItem>
+              <MenuItem icon={<Link2 className="h-4 w-4" />} onClick={() => handle(onUrl)}>
+                From URL
+              </MenuItem>
+              <MenuItem icon={<Upload className="h-4 w-4" />} onClick={() => handle(onUpload)}>
+                Upload markdown file
+              </MenuItem>
+            </motion.div>
+          </>
+        ) : null}
+      </AnimatePresence>
     </div>
   );
 }
@@ -396,9 +419,9 @@ function MenuItem({
       type="button"
       role="menuitem"
       onClick={onClick}
-      className="flex w-full items-center gap-2.5 rounded-[var(--radius-sm)] px-3 py-2 text-left text-sm text-[var(--color-text)] transition-colors hover:bg-[var(--color-subtle)]"
+      className="flex w-full items-center gap-2.5 rounded-[var(--radius-sm)] px-3 py-2 text-left text-[13px] text-[var(--color-text)] transition-colors hover:bg-[var(--color-subtle)]"
     >
-      <span className="text-[var(--color-muted)]">{icon}</span>
+      <span className="text-[var(--color-accent)]">{icon}</span>
       {children}
     </button>
   );
@@ -414,40 +437,37 @@ function DocCard({
   onDelete: () => void;
 }) {
   return (
-    <div className="card group relative flex flex-col gap-3 p-5 transition-all hover:shadow-[var(--shadow-pop)] hover:border-[var(--color-text)]/30">
+    <div className="group relative flex flex-col gap-3 rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-panel)] p-5 shadow-[var(--shadow-1)] transition-all duration-200 hover:-translate-y-0.5 hover:border-[var(--color-border-strong)] hover:bg-[var(--color-panel-2)] hover:shadow-[var(--shadow-2)]">
       <Link
         href={`/app/${appId}/knowledge/${doc._id}`}
         className="absolute inset-0 z-0 rounded-[inherit]"
         aria-label={doc.title}
       />
-      <header className="relative z-10 flex items-start justify-between gap-2">
-        <span
-          className={cn(
-            "inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-medium",
-            SOURCE_TONE[doc.source],
-          )}
-        >
+      <header className="pointer-events-none relative z-10 flex items-start justify-between gap-2">
+        <Badge tone={SOURCE_TONE[doc.source]} size="sm" dot>
           {SOURCE_LABEL[doc.source]}
-        </span>
-        <button
-          type="button"
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            onDelete();
-          }}
-          aria-label={`Delete ${doc.title}`}
-          className="relative z-10 grid h-7 w-7 place-items-center rounded-[var(--radius-sm)] text-[var(--color-muted)] opacity-0 transition-all hover:bg-red-50 hover:text-red-600 focus-visible:opacity-100 group-hover:opacity-100"
-        >
-          <Trash2 className="h-3.5 w-3.5" />
-        </button>
+        </Badge>
+        <div className="pointer-events-auto opacity-0 transition-opacity duration-150 focus-within:opacity-100 group-hover:opacity-100">
+          <IconButton
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              onDelete();
+            }}
+            label={`Delete ${doc.title}`}
+            size="sm"
+            className="text-[var(--color-muted)] hover:bg-[rgba(244,63,94,0.10)] hover:text-[var(--color-danger)]"
+          >
+            <Trash2 className="h-3.5 w-3.5" />
+          </IconButton>
+        </div>
       </header>
-      <div className="relative z-10 min-h-[3rem]">
-        <h3 className="line-clamp-2 font-display text-base leading-snug">
+      <div className="pointer-events-none relative z-10 min-h-[2.75rem]">
+        <h3 className="line-clamp-2 font-display text-[15px] font-semibold leading-snug tracking-tight text-[var(--color-text)]">
           {doc.title || "Untitled"}
         </h3>
       </div>
-      <footer className="relative z-10 text-[11px] text-[var(--color-muted)]">
+      <footer className="pointer-events-none relative z-10 text-[11px] text-[var(--color-muted)]">
         Updated {formatRelative(doc.updatedAt)}
       </footer>
     </div>
@@ -456,13 +476,24 @@ function DocCard({
 
 function EmptyDocs() {
   return (
-    <div className="card flex flex-col items-center gap-3 px-6 py-14 text-center">
-      <div className="grid h-12 w-12 place-items-center rounded-full bg-[var(--color-subtle)] text-[var(--color-muted)]">
+    <div className="relative flex flex-col items-center gap-4 overflow-hidden rounded-[var(--radius-xl)] border border-[var(--color-border)] bg-[var(--color-panel)] px-6 py-14 text-center shadow-[var(--shadow-1)]">
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0"
+        style={{
+          background:
+            "radial-gradient(500px 200px at 50% 0%, rgba(99,102,241,0.08), transparent 70%)",
+        }}
+      />
+      <div className="relative grid h-12 w-12 place-items-center overflow-hidden rounded-[var(--radius-lg)] bg-gradient-to-br from-[var(--color-accent-from)] to-[var(--color-accent-to)] text-white shadow-[var(--shadow-1)]">
+        <span aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-px bg-white/30" />
         <BookOpen className="h-5 w-5" />
       </div>
-      <div>
-        <div className="font-display text-base">No knowledge yet</div>
-        <p className="mt-1 max-w-sm text-sm text-[var(--color-muted)]">
+      <div className="relative">
+        <div className="font-display text-[15px] font-semibold tracking-tight text-[var(--color-text)]">
+          No knowledge yet
+        </div>
+        <p className="mt-1 max-w-sm text-sm leading-relaxed text-[var(--color-muted)]">
           Add reference material so your assistant can ground its answers in
           your real research.
         </p>
@@ -473,12 +504,9 @@ function EmptyDocs() {
 
 function DocsSkeleton() {
   return (
-    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
       {Array.from({ length: 3 }).map((_, i) => (
-        <div
-          key={i}
-          className="h-32 animate-pulse rounded-[var(--radius-lg)] bg-[var(--color-subtle)]"
-        />
+        <Skeleton key={i} className="h-32 rounded-[var(--radius-lg)]" />
       ))}
     </div>
   );

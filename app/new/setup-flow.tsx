@@ -28,10 +28,19 @@ const TYPE_ICONS: Record<AppType, ReactElement> = {
   desktop: <Monitor className="h-5 w-5" />,
 };
 
-const slideVariants = {
-  initial: { opacity: 0, y: 8 },
-  animate: { opacity: 1, y: 0 },
+const stepVariants = {
+  initial: { opacity: 0, y: 10 },
+  animate: {
+    opacity: 1,
+    y: 0,
+    transition: { staggerChildren: 0.04, delayChildren: 0.04 },
+  },
   exit: { opacity: 0, y: -8 },
+};
+
+const childItem = {
+  initial: { opacity: 0, y: 6 },
+  animate: { opacity: 1, y: 0 },
 };
 
 export function SetupFlow() {
@@ -75,32 +84,36 @@ export function SetupFlow() {
   }
 
   return (
-    <section className="mx-auto max-w-2xl px-6 pb-20 pt-8">
+    <section className="mx-auto max-w-2xl px-6 pb-24 pt-10">
       <div className="mb-10 flex justify-center">
         <Stepper steps={STEP_LABELS} current={step} />
       </div>
 
-      <div className="card p-8 md:p-10">
+      <div className="relative overflow-hidden rounded-[var(--radius-xl)] border border-[var(--color-border)] bg-[var(--color-panel)] p-8 shadow-[var(--shadow-2)] md:p-10">
+        <span
+          aria-hidden
+          className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/8 to-transparent"
+        />
         <AnimatePresence mode="wait">
           {step === 0 ? (
             <motion.div
               key="step-basics"
-              variants={slideVariants}
+              variants={stepVariants}
               initial="initial"
               animate="animate"
               exit="exit"
-              transition={{ duration: 0.18, ease: "easeOut" }}
+              transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
               className="space-y-8"
             >
-              <header className="space-y-1.5">
-                <h1 className="font-display text-2xl tracking-tight">Let&apos;s name your app</h1>
-                <p className="text-sm text-[var(--color-muted)]">
-                  You can rename it anytime.
-                </p>
-              </header>
+              <motion.header variants={childItem} className="space-y-1.5">
+                <h1 className="font-display text-2xl font-semibold tracking-tight">
+                  Let&apos;s name your app
+                </h1>
+                <p className="text-sm text-[var(--color-muted)]">You can rename it anytime.</p>
+              </motion.header>
 
-              <div className="space-y-2">
-                <label htmlFor="app-name" className="text-sm font-medium">
+              <motion.div variants={childItem} className="space-y-2">
+                <label htmlFor="app-name" className="text-xs font-semibold uppercase tracking-wider text-[var(--color-muted)]">
                   App name
                 </label>
                 <Input
@@ -114,10 +127,12 @@ export function SetupFlow() {
                   }}
                   autoFocus
                 />
-              </div>
+              </motion.div>
 
-              <div className="space-y-3">
-                <div className="text-sm font-medium">App type</div>
+              <motion.div variants={childItem} className="space-y-3">
+                <div className="text-xs font-semibold uppercase tracking-wider text-[var(--color-muted)]">
+                  App type
+                </div>
                 <div className="grid gap-3 sm:grid-cols-3" role="radiogroup">
                   {APP_TYPES.map((opt) => (
                     <RadioCard
@@ -130,44 +145,47 @@ export function SetupFlow() {
                     />
                   ))}
                 </div>
-              </div>
+              </motion.div>
 
-              <div className="flex justify-end pt-2">
-                <Button
-                  onClick={() => setStep(1)}
-                  disabled={!canAdvanceFromBasics}
-                  size="lg"
-                >
+              <motion.div variants={childItem} className="flex justify-end pt-2">
+                <Button onClick={() => setStep(1)} disabled={!canAdvanceFromBasics} size="lg">
                   Continue
                 </Button>
-              </div>
+              </motion.div>
             </motion.div>
           ) : null}
 
           {step === 1 ? (
             <motion.div
               key="step-stack"
-              variants={slideVariants}
+              variants={stepVariants}
               initial="initial"
               animate="animate"
               exit="exit"
-              transition={{ duration: 0.18, ease: "easeOut" }}
+              transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
               className="space-y-8"
             >
-              <header className="space-y-1.5">
-                <h1 className="font-display text-2xl tracking-tight">Pick your stack</h1>
+              <motion.header variants={childItem} className="space-y-1.5">
+                <h1 className="font-display text-2xl font-semibold tracking-tight">
+                  Pick your stack
+                </h1>
                 <p className="text-sm text-[var(--color-muted)]">
                   Optional — you can fill this in later or extract it from your PRD.
                 </p>
-              </header>
+              </motion.header>
 
-              <StackPicker value={stack} onChange={handleStackChange} />
+              <motion.div variants={childItem}>
+                <StackPicker value={stack} onChange={handleStackChange} />
+              </motion.div>
 
-              <div className="flex items-center justify-between gap-3 pt-2">
+              <motion.div
+                variants={childItem}
+                className="flex items-center justify-between gap-3 pt-2"
+              >
                 <Button variant="ghost" onClick={() => setStep(0)}>
                   Back
                 </Button>
-                <div className="flex gap-3">
+                <div className="flex gap-2">
                   <Button variant="secondary" onClick={handleSkipStack}>
                     Skip for now
                   </Button>
@@ -175,28 +193,33 @@ export function SetupFlow() {
                     Continue
                   </Button>
                 </div>
-              </div>
+              </motion.div>
             </motion.div>
           ) : null}
 
           {step === 2 ? (
             <motion.div
               key="step-review"
-              variants={slideVariants}
+              variants={stepVariants}
               initial="initial"
               animate="animate"
               exit="exit"
-              transition={{ duration: 0.18, ease: "easeOut" }}
+              transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
               className="space-y-8"
             >
-              <header className="space-y-1.5">
-                <h1 className="font-display text-2xl tracking-tight">Looks good?</h1>
+              <motion.header variants={childItem} className="space-y-1.5">
+                <h1 className="font-display text-2xl font-semibold tracking-tight">
+                  Looks good?
+                </h1>
                 <p className="text-sm text-[var(--color-muted)]">
                   Review and create your app workspace.
                 </p>
-              </header>
+              </motion.header>
 
-              <div className="space-y-5 rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-bg)] p-6">
+              <motion.div
+                variants={childItem}
+                className="space-y-5 rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-panel-2)] p-6"
+              >
                 <ReviewRow label="Name" value={name.trim() || "—"} />
                 <ReviewRow
                   label="Type"
@@ -212,9 +235,12 @@ export function SetupFlow() {
                     )
                   }
                 />
-              </div>
+              </motion.div>
 
-              <div className="flex items-center justify-between gap-3 pt-2">
+              <motion.div
+                variants={childItem}
+                className="flex items-center justify-between gap-3 pt-2"
+              >
                 <Button variant="ghost" onClick={() => setStep(1)} disabled={isPending}>
                   Back
                 </Button>
@@ -222,7 +248,7 @@ export function SetupFlow() {
                   <Sparkles className="h-4 w-4" />
                   {isPending ? "Creating…" : "Create app"}
                 </Button>
-              </div>
+              </motion.div>
             </motion.div>
           ) : null}
         </AnimatePresence>
@@ -234,10 +260,10 @@ export function SetupFlow() {
 function ReviewRow({ label, value }: { label: string; value: React.ReactNode }) {
   return (
     <div className="flex items-start justify-between gap-6">
-      <div className="text-xs font-medium uppercase tracking-wide text-[var(--color-muted)]">
+      <div className="text-[10px] font-semibold uppercase tracking-[0.08em] text-[var(--color-muted)]">
         {label}
       </div>
-      <div className="max-w-[70%] text-right text-sm">{value}</div>
+      <div className="max-w-[70%] text-right text-sm text-[var(--color-text)]">{value}</div>
     </div>
   );
 }
@@ -257,7 +283,7 @@ function StackSummary({ stack }: { stack: StackSelection }) {
     <div className="space-y-1.5">
       {lines.map((line) => (
         <div key={line.label} className="flex items-baseline gap-2">
-          <span className="text-[11px] uppercase tracking-wide text-[var(--color-muted)]">
+          <span className="text-[10px] font-semibold uppercase tracking-wider text-[var(--color-muted)]">
             {line.label}:
           </span>
           <span>{line.value}</span>

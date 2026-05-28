@@ -26,7 +26,6 @@ export function ReleaseModal({
   const [emoji, setEmoji] = useState(EMOJI_PRESETS[0]);
   const [submitting, setSubmitting] = useState(false);
 
-  // Reset fields when the modal opens. "Adjust state during render" pattern.
   const [prevOpen, setPrevOpen] = useState(open);
   if (open !== prevOpen) {
     setPrevOpen(open);
@@ -61,14 +60,17 @@ export function ReleaseModal({
             Cancel
           </Button>
           <Button onClick={handleSubmit} disabled={!name.trim() || submitting}>
-            {submitting ? "Creating…" : "Create"}
+            {submitting ? "Creating…" : "Create release"}
           </Button>
         </>
       }
     >
       <div className="space-y-5">
         <div className="space-y-2">
-          <label htmlFor="release-name" className="text-sm font-medium">
+          <label
+            htmlFor="release-name"
+            className="text-[11px] font-semibold uppercase tracking-wider text-[var(--color-muted)]"
+          >
             Name
           </label>
           <Input
@@ -85,8 +87,10 @@ export function ReleaseModal({
         </div>
 
         <div className="space-y-2">
-          <label className="text-sm font-medium">Emoji</label>
-          <div className="flex flex-wrap gap-2">
+          <label className="text-[11px] font-semibold uppercase tracking-wider text-[var(--color-muted)]">
+            Emoji
+          </label>
+          <div className="flex flex-wrap gap-1.5">
             {EMOJI_PRESETS.map((e) => (
               <button
                 key={e}
@@ -94,10 +98,10 @@ export function ReleaseModal({
                 onClick={() => setEmoji(e)}
                 aria-pressed={emoji === e}
                 className={cn(
-                  "grid h-9 w-9 place-items-center rounded-[var(--radius-sm)] border text-base transition-colors",
+                  "grid h-9 w-9 place-items-center rounded-[var(--radius-sm)] border text-base transition-all duration-150",
                   emoji === e
-                    ? "border-[var(--color-text)] bg-[var(--color-subtle)]"
-                    : "border-[var(--color-border)] bg-[var(--color-surface)] hover:bg-[var(--color-subtle)]",
+                    ? "border-[var(--color-accent)] bg-[color:var(--color-accent-soft)] shadow-[0_0_0_1px_var(--color-accent-soft)_inset]"
+                    : "border-[var(--color-border)] bg-[var(--color-panel)] hover:border-[var(--color-border-strong)] hover:bg-[var(--color-subtle)]",
                 )}
               >
                 {e}
@@ -109,7 +113,7 @@ export function ReleaseModal({
               onChange={(e) => setEmoji(e.target.value)}
               maxLength={12}
               aria-label="Custom emoji"
-              className="h-9 w-16 rounded-[var(--radius-sm)] border border-[var(--color-border)] bg-[var(--color-surface)] text-center text-base outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-text)]/15"
+              className="h-9 w-16 rounded-[var(--radius-sm)] border border-[var(--color-border)] bg-[var(--color-panel)] text-center text-base text-[var(--color-text)] outline-none transition-colors hover:border-[var(--color-border-strong)] focus-visible:border-[var(--color-accent)] focus-visible:ring-2 focus-visible:ring-[color:var(--color-accent-glow)]"
             />
           </div>
         </div>

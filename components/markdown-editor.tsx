@@ -1,6 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import { Skeleton } from "@/components/ui/skeleton";
 import "@uiw/react-md-editor/markdown-editor.css";
 import "@uiw/react-markdown-preview/markdown.css";
 
@@ -23,7 +24,7 @@ export function MarkdownEditor({
   height = 560,
 }: MarkdownEditorProps) {
   return (
-    <div data-color-mode="light" className="vibeify-md-editor">
+    <div data-color-mode="dark" className="vibeify-md-editor">
       <MDEditor
         value={value}
         onChange={(v) => onChange(v ?? "")}
@@ -37,7 +38,5 @@ export function MarkdownEditor({
 }
 
 function MarkdownSkeleton() {
-  return (
-    <div className="h-[560px] animate-pulse rounded-[var(--radius-lg)] bg-[var(--color-subtle)]" />
-  );
+  return <Skeleton className="h-[560px] rounded-[var(--radius-lg)]" />;
 }

@@ -1,20 +1,20 @@
 import type { Metadata } from "next";
-import { Space_Grotesk, Work_Sans } from "next/font/google";
+import { Sora, Inter } from "next/font/google";
 import { Providers } from "@/components/providers";
 import { EnsureUser } from "@/components/ensure-user";
 import "./globals.css";
 
-const spaceGrotesk = Space_Grotesk({
+const sora = Sora({
   subsets: ["latin"],
-  weight: ["500", "600"],
-  variable: "--font-space-grotesk",
+  weight: ["500", "600", "700"],
+  variable: "--font-sora",
   display: "swap",
 });
 
-const workSans = Work_Sans({
+const inter = Inter({
   subsets: ["latin"],
   weight: ["400", "500", "600"],
-  variable: "--font-work-sans",
+  variable: "--font-inter",
   display: "swap",
 });
 
@@ -29,7 +29,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${spaceGrotesk.variable} ${workSans.variable}`}>
+    <html lang="en" className={`${sora.variable} ${inter.variable}`}>
       <body className="min-h-screen antialiased">
         <Providers>
           <EnsureUser />

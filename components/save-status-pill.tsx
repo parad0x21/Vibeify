@@ -13,7 +13,6 @@ export function SaveStatusPill({
   status: SaveStatus;
   lastSaved: number | null;
 }) {
-  // Re-render once a minute so "1m ago" stays fresh.
   const [, tick] = useState(0);
   useEffect(() => {
     const id = setInterval(() => tick((n) => n + 1), 60_000);
@@ -22,8 +21,8 @@ export function SaveStatusPill({
 
   if (status === "saving") {
     return (
-      <Pill tone="muted">
-        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+      <Pill tone="info" dot="bg-[var(--color-info)] shadow-[0_0_8px_rgba(34,211,238,0.6)]">
+        <Loader2 className="h-3 w-3 animate-spin" />
         Saving…
       </Pill>
     );
@@ -31,16 +30,16 @@ export function SaveStatusPill({
 
   if (status === "error") {
     return (
-      <Pill tone="error">
-        <AlertCircle className="h-3.5 w-3.5" />
+      <Pill tone="error" dot="bg-[var(--color-danger)] shadow-[0_0_8px_rgba(244,63,94,0.6)]">
+        <AlertCircle className="h-3 w-3" />
         Save failed
       </Pill>
     );
   }
 
   return (
-    <Pill tone="muted">
-      <Check className="h-3.5 w-3.5" />
+    <Pill tone="success" dot="bg-[var(--color-success)] shadow-[0_0_8px_rgba(16,185,129,0.5)]">
+      <Check className="h-3 w-3" />
       {lastSaved ? `Saved ${formatRelative(lastSaved)}` : "Saved"}
     </Pill>
   );
@@ -48,20 +47,25 @@ export function SaveStatusPill({
 
 function Pill({
   tone,
+  dot,
   children,
 }: {
-  tone: "muted" | "error";
+  tone: "info" | "error" | "success";
+  dot: string;
   children: React.ReactNode;
 }) {
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-medium",
+        "inline-flex items-center gap-1.5 rounded-full border border-[var(--color-border)] bg-[var(--color-panel-2)] px-2 py-1 text-[10px] font-medium tracking-tight",
         tone === "error"
-          ? "border-red-200 bg-red-50 text-red-700"
-          : "border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-muted)]",
+          ? "text-[var(--color-danger)]"
+          : tone === "info"
+            ? "text-[var(--color-info)]"
+            : "text-[var(--color-muted)]",
       )}
     >
+      <span className={cn("h-1.5 w-1.5 rounded-full", dot)} aria-hidden />
       {children}
     </span>
   );

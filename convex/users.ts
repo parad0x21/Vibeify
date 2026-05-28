@@ -160,7 +160,7 @@ export const deleteByClerkId = internalMutation({
   },
 });
 
-async function cascadeDeleteApp(ctx: MutationCtx, appId: Doc<"apps">["_id"]) {
+export async function cascadeDeleteApp(ctx: MutationCtx, appId: Doc<"apps">["_id"]) {
   // Per-table queries because each table's index types are distinct;
   // `releases` and `columns` use the compound `by_app_order` index, queried by `appId` prefix.
   const prds = await ctx.db

@@ -2,33 +2,55 @@
 
 @theme {
   /* Typography */
-  --font-sans: var(--font-work-sans), ui-sans-serif, system-ui, sans-serif;
-  --font-display: var(--font-space-grotesk), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-sora), ui-sans-serif, system-ui, sans-serif;
 
-  /* Radius */
-  --radius-sm: 10px;
-  --radius-md: 12px;
-  --radius-lg: 14px;
-  --radius-xl: 18px;
+  /* Radius — tighter, more technical */
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 10px;
+  --radius-xl: 14px;
 
-  /* Soft shadows */
-  --shadow-soft: 0 1px 2px rgba(16, 24, 40, 0.04), 0 4px 12px rgba(16, 24, 40, 0.04);
-  --shadow-pop: 0 8px 24px rgba(16, 24, 40, 0.08);
+  /* Layered shadows for dark surfaces (inset highlight + soft cast) */
+  --shadow-1: 0 1px 0 rgba(255, 255, 255, 0.04) inset, 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-2: 0 1px 0 rgba(255, 255, 255, 0.04) inset, 0 8px 24px rgba(0, 0, 0, 0.45);
+  --shadow-3: 0 1px 0 rgba(255, 255, 255, 0.05) inset, 0 24px 64px rgba(0, 0, 0, 0.6);
+  --shadow-glow: 0 0 0 1px rgba(99, 102, 241, 0.55), 0 0 24px rgba(99, 102, 241, 0.35);
 
-  /* Surfaces */
-  --color-bg: #fafafa;
-  --color-surface: #ffffff;
-  --color-border: #ececec;
-  --color-text: #0f1115;
-  --color-muted: #6b7280;
-  --color-accent: #0f1115;
+  /* Back-compat aliases for existing component classes */
+  --shadow-soft: var(--shadow-1);
+  --shadow-pop: var(--shadow-2);
+
+  /* Surfaces — deep graphite, layered */
+  --color-bg-base: #0a0b0f;
+  --color-bg: #0c0e13;
+  --color-panel: #12141a;
+  --color-panel-2: #171a21;
+  --color-subtle: #1b1f27;
+  --color-border: #1f2330;
+  --color-border-strong: #2a2f3d;
+
+  --color-surface: var(--color-panel); /* alias for back-compat */
+  --color-text: #e7e9ee;
+  --color-muted: #8a93a6;
+
+  /* Accents — indigo → violet primary, cyan/emerald secondaries */
+  --color-accent: #6366f1;
+  --color-accent-from: #6366f1;
+  --color-accent-to: #8b5cf6;
   --color-accent-fg: #ffffff;
-  --color-subtle: #f4f4f5;
+  --color-accent-glow: rgba(99, 102, 241, 0.35);
+  --color-accent-soft: rgba(99, 102, 241, 0.12);
+
+  --color-info: #22d3ee;
+  --color-success: #10b981;
+  --color-warning: #f59e0b;
+  --color-danger: #f43f5e;
 }
 
 @layer base {
   :root {
-    color-scheme: light;
+    color-scheme: dark;
   }
 
   html,
@@ -37,14 +59,34 @@
   }
 
   body {
-    background-color: var(--color-bg);
+    background-color: var(--color-bg-base);
     color: var(--color-text);
     font-family: var(--font-sans);
     font-feature-settings:
       "rlig" 1,
-      "calt" 1;
+      "calt" 1,
+      "ss01" 1;
     -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
+    line-height: 1.55;
+  }
+
+  /* Subtle ambient gradient behind the app */
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    background:
+      radial-gradient(900px 600px at 100% -10%, rgba(139, 92, 246, 0.08), transparent 60%),
+      radial-gradient(800px 500px at -10% 110%, rgba(99, 102, 241, 0.07), transparent 60%);
+    z-index: 0;
+  }
+
+  body > * {
+    position: relative;
+    z-index: 1;
   }
 
   h1,
@@ -54,30 +96,68 @@
   h5,
   h6 {
     font-family: var(--font-display);
-    font-weight: 500;
-    letter-spacing: -0.01em;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    color: var(--color-text);
   }
 
-  /* Subtle scrollbar */
+  ::selection {
+    background: rgba(99, 102, 241, 0.35);
+    color: var(--color-text);
+  }
+
+  /* Scrollbar — refined dark */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-border-strong) transparent;
+  }
   ::-webkit-scrollbar {
-    width: 10px;
-    height: 10px;
+    width: 8px;
+    height: 8px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
   }
   ::-webkit-scrollbar-thumb {
-    background: #e4e4e7;
+    background: var(--color-border);
     border-radius: 8px;
+    border: 2px solid transparent;
+    background-clip: padding-box;
   }
   ::-webkit-scrollbar-thumb:hover {
-    background: #d4d4d8;
+    background: var(--color-border-strong);
+    background-clip: padding-box;
   }
 }
 
 @layer components {
   .card {
-    background-color: var(--color-surface);
+    background-color: var(--color-panel);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-soft);
+    box-shadow: var(--shadow-1);
+  }
+
+  /* Skeleton shimmer base */
+  .shimmer {
+    position: relative;
+    overflow: hidden;
+    background-color: var(--color-panel);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+  }
+  .shimmer::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(255, 255, 255, 0.025) 50%,
+      transparent 100%
+    );
+    animation: shimmer 1.6s ease-in-out infinite;
+    transform: translateX(-100%);
   }
 }
 
@@ -85,26 +165,61 @@
   .font-display {
     font-family: var(--font-display);
   }
+  .text-balance {
+    text-wrap: balance;
+  }
+  .gradient-text {
+    background: linear-gradient(135deg, var(--color-accent-from), var(--color-accent-to));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .accent-gradient {
+    background: linear-gradient(180deg, var(--color-accent-from), var(--color-accent-to));
+  }
 }
 
-/* ─── @uiw/react-md-editor overrides ──────────────────────────────────────── */
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+  .shimmer::after {
+    display: none;
+  }
+}
+
+/* ─── @uiw/react-md-editor overrides (dark) ────────────────────────────────── */
 .vibeify-md-editor .w-md-editor {
-  background-color: var(--color-surface);
+  background-color: var(--color-panel);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-soft);
+  box-shadow: var(--shadow-1);
   overflow: hidden;
   font-family: var(--font-sans);
+  color: var(--color-text);
+  --color-fg-default: var(--color-text);
+  --color-canvas-default: var(--color-panel);
 }
 .vibeify-md-editor .w-md-editor-toolbar {
-  background-color: var(--color-bg);
+  background-color: var(--color-panel-2);
   border-bottom: 1px solid var(--color-border);
   padding: 8px 10px;
 }
 .vibeify-md-editor .w-md-editor-toolbar ul > li > button {
   border-radius: var(--radius-sm);
   color: var(--color-muted);
-  transition: background-color 0.12s ease;
+  transition: all 0.12s ease;
 }
 .vibeify-md-editor .w-md-editor-toolbar ul > li > button:hover {
   background-color: var(--color-subtle);
@@ -112,7 +227,10 @@
 }
 .vibeify-md-editor .w-md-editor-toolbar li.active > button {
   background-color: var(--color-subtle);
-  color: var(--color-text);
+  color: var(--color-accent);
+}
+.vibeify-md-editor .w-md-editor-toolbar-divider {
+  background-color: var(--color-border);
 }
 .vibeify-md-editor .w-md-editor-text {
   padding: 4px 0;
@@ -122,12 +240,14 @@
 .vibeify-md-editor textarea {
   font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace !important;
   font-size: 14px !important;
-  line-height: 1.6 !important;
+  line-height: 1.65 !important;
   color: var(--color-text) !important;
+  -webkit-text-fill-color: var(--color-text) !important;
+  caret-color: var(--color-accent) !important;
 }
 .vibeify-md-editor .w-md-editor-preview {
-  background-color: var(--color-surface);
-  padding: 20px 24px;
+  background-color: var(--color-panel);
+  padding: 24px 28px;
 }
 .vibeify-md-editor .wmde-markdown {
   background-color: transparent;
@@ -139,8 +259,45 @@
 .vibeify-md-editor .wmde-markdown h3,
 .vibeify-md-editor .wmde-markdown h4 {
   font-family: var(--font-display);
-  font-weight: 500;
+  font-weight: 600;
   border-bottom: none;
+  color: var(--color-text);
+  letter-spacing: -0.02em;
+}
+.vibeify-md-editor .wmde-markdown a {
+  color: var(--color-accent);
+}
+.vibeify-md-editor .wmde-markdown code {
+  background-color: var(--color-subtle);
+  color: var(--color-text);
+  border-radius: 6px;
+  padding: 0.1em 0.4em;
+}
+.vibeify-md-editor .wmde-markdown pre {
+  background-color: var(--color-bg-base);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+.vibeify-md-editor .wmde-markdown pre code {
+  background-color: transparent;
+  color: var(--color-text);
+}
+.vibeify-md-editor .wmde-markdown blockquote {
+  border-left: 2px solid var(--color-accent);
+  background-color: var(--color-accent-soft);
+  color: var(--color-text);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+}
+.vibeify-md-editor .wmde-markdown hr {
+  background-color: var(--color-border);
+}
+.vibeify-md-editor .wmde-markdown table tr {
+  background-color: transparent;
+  border-top-color: var(--color-border);
+}
+.vibeify-md-editor .wmde-markdown table th,
+.vibeify-md-editor .wmde-markdown table td {
+  border-color: var(--color-border);
 }
 
 /* ─── Chat message markdown ────────────────────────────────────────────────── */
@@ -148,7 +305,8 @@
   background-color: transparent;
   color: var(--color-text);
   font-family: var(--font-sans);
-  line-height: 1.55;
+  line-height: 1.6;
+  font-size: 14px;
 }
 .vibeify-chat-message .wmde-markdown h1,
 .vibeify-chat-message .wmde-markdown h2,
@@ -157,9 +315,11 @@
 .vibeify-chat-message .wmde-markdown h5,
 .vibeify-chat-message .wmde-markdown h6 {
   font-family: var(--font-display);
-  font-weight: 500;
+  font-weight: 600;
   border-bottom: none;
   margin: 0.75em 0 0.35em;
+  letter-spacing: -0.02em;
+  color: var(--color-text);
 }
 .vibeify-chat-message .wmde-markdown p {
   margin: 0.4em 0;
@@ -178,21 +338,35 @@
 .vibeify-chat-message .wmde-markdown li {
   margin: 0.15em 0;
 }
+.vibeify-chat-message .wmde-markdown a {
+  color: var(--color-accent);
+  text-decoration-color: rgba(99, 102, 241, 0.4);
+  text-underline-offset: 2px;
+}
 .vibeify-chat-message .wmde-markdown code {
   background-color: var(--color-subtle);
-  padding: 0.1em 0.35em;
+  color: var(--color-text);
+  padding: 0.1em 0.4em;
   border-radius: 6px;
   font-size: 0.88em;
 }
 .vibeify-chat-message .wmde-markdown pre {
-  background-color: var(--color-subtle);
+  background-color: var(--color-bg-base);
   border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
-  padding: 10px 12px;
-  margin: 0.5em 0;
+  border-radius: var(--radius-md);
+  padding: 12px 14px;
+  margin: 0.6em 0;
   font-size: 0.85em;
 }
 .vibeify-chat-message .wmde-markdown pre code {
   background-color: transparent;
   padding: 0;
+  color: var(--color-text);
+}
+.vibeify-chat-message .wmde-markdown blockquote {
+  border-left: 2px solid var(--color-accent);
+  background-color: var(--color-accent-soft);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  padding: 4px 12px;
+  color: var(--color-text);
 }

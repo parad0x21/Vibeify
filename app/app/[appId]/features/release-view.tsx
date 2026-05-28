@@ -24,7 +24,26 @@ import { toast } from "sonner";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import { cn } from "@/lib/utils";
+import { Badge } from "@/components/ui/badge";
 import type { FeatureDoc, ReleaseDoc } from "./features-page-client";
+
+type Tone = "neutral" | "info" | "warning" | "success" | "accent" | "danger";
+
+const STATUS_TONE: Record<string, Tone> = {
+  backlog: "neutral",
+  in_progress: "info",
+  testing: "warning",
+  complete: "success",
+  live: "accent",
+};
+
+const STATUS_LABELS: Record<string, string> = {
+  backlog: "Backlog",
+  in_progress: "In progress",
+  testing: "Testing",
+  complete: "Complete",
+  live: "Live",
+};
 
 interface ReleaseViewProps {
   appId: Id<"apps">;
@@ -47,9 +66,6 @@ export function ReleaseView({
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
   );
 
-  // Local optimistic ordering for releases. Reconcile during render when the
-  // server signature changes — avoids the `set-state-in-effect` rule and matches
-  // React's recommended "adjust state on prop change" pattern.
   const serverSig = releases.map((r) => `${r._id}:${r.order}`).join(",");
   const [prevSig, setPrevSig] = useState(serverSig);
   const [orderedIds, setOrderedIds] = useState<Id<"releases">[]>(() =>
@@ -57,9 +73,7 @@ export function ReleaseView({
   );
   if (serverSig !== prevSig) {
     setPrevSig(serverSig);
-    setOrderedIds(
-      [...releases].sort((a, b) => a.order - b.order).map((r) => r._id),
-    );
+    setOrderedIds([...releases].sort((a, b) => a.order - b.order).map((r) => r._id));
   }
 
   const releasesById = useMemo(
@@ -67,7 +81,6 @@ export function ReleaseView({
     [releases],
   );
 
-  // Group features by releaseId (unassigned bucket too)
   const featuresByRelease = useMemo(() => {
     const map = new Map<Id<"releases"> | "unassigned", FeatureDoc[]>();
     map.set("unassigned", []);
@@ -100,7 +113,7 @@ export function ReleaseView({
   const unassigned = featuresByRelease.get("unassigned") ?? [];
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-4">
       <DndContext
         sensors={sensors}
         collisionDetection={closestCenter}
@@ -127,7 +140,7 @@ export function ReleaseView({
       <button
         type="button"
         onClick={onCreateRelease}
-        className="card flex w-full items-center justify-center gap-2 border-dashed py-5 text-sm font-medium text-[var(--color-muted)] transition-colors hover:border-[var(--color-text)]/30 hover:text-[var(--color-text)]"
+        className="flex w-full items-center justify-center gap-2 rounded-[var(--radius-lg)] border border-dashed border-[var(--color-border)] bg-transparent py-5 text-sm font-medium text-[var(--color-muted)] transition-all duration-200 hover:border-[var(--color-accent)]/40 hover:bg-[color:var(--color-accent-soft)]/30 hover:text-[var(--color-text)]"
       >
         <Plus className="h-4 w-4" />
         New release
@@ -145,14 +158,8 @@ function SortableReleaseGroup({
   features: FeatureDoc[];
   onOpenFeature: (id: Id<"features">) => void;
 }) {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ id: release._id });
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
+    useSortable({ id: release._id });
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -164,25 +171,27 @@ function SortableReleaseGroup({
       ref={setNodeRef}
       style={style}
       className={cn(
-        "card relative overflow-hidden",
-        isDragging && "z-10 opacity-90 shadow-[var(--shadow-pop)]",
+        "relative overflow-hidden rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-panel)] shadow-[var(--shadow-1)]",
+        isDragging && "z-10 border-[var(--color-accent)] shadow-[var(--shadow-3)]",
       )}
     >
-      <header className="flex items-center gap-3 border-b border-[var(--color-border)] px-5 py-4">
+      <header className="flex items-center gap-3 border-b border-[var(--color-border)] bg-[var(--color-panel)] px-4 py-3.5">
         <button
           type="button"
           aria-label="Drag to reorder"
-          className="grid h-7 w-7 cursor-grab place-items-center rounded-[var(--radius-sm)] text-[var(--color-muted)] hover:bg-[var(--color-subtle)] active:cursor-grabbing"
+          className="grid h-7 w-7 cursor-grab place-items-center rounded-[var(--radius-sm)] text-[var(--color-muted)] transition-colors hover:bg-[var(--color-subtle)] hover:text-[var(--color-text)] active:cursor-grabbing"
           {...attributes}
           {...listeners}
         >
           <GripVertical className="h-4 w-4" />
         </button>
-        <div className="grid h-8 w-8 place-items-center rounded-[10px] bg-[var(--color-subtle)] text-base">
+        <div className="grid h-8 w-8 place-items-center rounded-[var(--radius-md)] bg-[var(--color-panel-2)] text-base ring-1 ring-inset ring-[var(--color-border)]">
           {release.emoji}
         </div>
         <div className="min-w-0 flex-1">
-          <h2 className="truncate font-display text-lg leading-tight">{release.name}</h2>
+          <h2 className="truncate font-display text-[15px] font-semibold leading-tight tracking-tight text-[var(--color-text)]">
+            {release.name}
+          </h2>
           <div className="mt-0.5 text-[11px] text-[var(--color-muted)]">
             {features.length} feature{features.length === 1 ? "" : "s"}
           </div>
@@ -203,13 +212,15 @@ function UnassignedGroup({
 }) {
   if (features.length === 0) return null;
   return (
-    <article className="card overflow-hidden">
-      <header className="flex items-center gap-3 border-b border-[var(--color-border)] bg-[var(--color-bg)]/50 px-5 py-4">
-        <div className="grid h-8 w-8 place-items-center rounded-[10px] bg-[var(--color-subtle)] text-[var(--color-muted)]">
+    <article className="overflow-hidden rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-panel)] shadow-[var(--shadow-1)]">
+      <header className="flex items-center gap-3 border-b border-[var(--color-border)] bg-[var(--color-panel)] px-4 py-3.5">
+        <div className="grid h-8 w-8 place-items-center rounded-[var(--radius-md)] bg-[var(--color-panel-2)] text-[var(--color-muted)] ring-1 ring-inset ring-[var(--color-border)]">
           <Inbox className="h-4 w-4" />
         </div>
         <div>
-          <h2 className="font-display text-lg leading-tight">Unassigned</h2>
+          <h2 className="font-display text-[15px] font-semibold leading-tight tracking-tight text-[var(--color-text)]">
+            Unassigned
+          </h2>
           <div className="mt-0.5 text-[11px] text-[var(--color-muted)]">
             Features without a release
           </div>
@@ -235,7 +246,7 @@ function FeatureGrid({
     );
   }
   return (
-    <div className="grid gap-3 p-4 sm:grid-cols-2 lg:grid-cols-3">
+    <div className="grid gap-2.5 p-3 sm:grid-cols-2 lg:grid-cols-3">
       {features.map((f) => (
         <FeatureCard key={f._id} feature={f} onClick={() => onOpenFeature(f._id)} />
       ))}
@@ -254,44 +265,20 @@ function FeatureCard({
     <button
       type="button"
       onClick={onClick}
-      className="flex flex-col items-start gap-2 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-surface)] p-4 text-left transition-all hover:border-[var(--color-text)]/30 hover:shadow-[var(--shadow-soft)]"
+      className="group flex flex-col items-start gap-2.5 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-panel-2)] p-3.5 text-left transition-all duration-200 hover:-translate-y-px hover:border-[var(--color-border-strong)] hover:bg-[var(--color-subtle)] hover:shadow-[var(--shadow-2)]"
     >
-      <StatusPill status={feature.status} />
+      <Badge
+        tone={STATUS_TONE[feature.status] ?? "neutral"}
+        size="sm"
+        dot
+      >
+        {STATUS_LABELS[feature.status] ?? feature.status}
+      </Badge>
       <div className="min-h-[2.5rem] w-full">
-        <h3 className="line-clamp-2 text-sm font-medium leading-snug">
+        <h3 className="line-clamp-2 text-[13px] font-medium leading-snug text-[var(--color-text)]">
           {feature.name}
         </h3>
       </div>
     </button>
   );
 }
-
-function StatusPill({ status }: { status: string }) {
-  const tone = STATUS_TONES[status] ?? STATUS_TONES.backlog;
-  return (
-    <span
-      className={cn(
-        "inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-medium",
-        tone,
-      )}
-    >
-      {STATUS_LABELS[status] ?? status}
-    </span>
-  );
-}
-
-const STATUS_LABELS: Record<string, string> = {
-  backlog: "Backlog",
-  in_progress: "In progress",
-  testing: "Testing",
-  complete: "Complete",
-  live: "Live",
-};
-
-const STATUS_TONES: Record<string, string> = {
-  backlog: "bg-zinc-50 text-zinc-700 border-zinc-200",
-  in_progress: "bg-blue-50 text-blue-700 border-blue-100",
-  testing: "bg-amber-50 text-amber-800 border-amber-100",
-  complete: "bg-emerald-50 text-emerald-800 border-emerald-100",
-  live: "bg-violet-50 text-violet-800 border-violet-100",
-};

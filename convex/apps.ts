@@ -1,6 +1,6 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
-import { getCurrentUser, requireAppAccess, requireUser } from "./users";
+import { cascadeDeleteApp, getCurrentUser, requireAppAccess, requireUser } from "./users";
 
 const appType = v.union(v.literal("web"), v.literal("mobile"), v.literal("desktop"));
 
@@ -107,5 +107,13 @@ export const renameApp = mutation({
     if (trimmed.length === 0) throw new Error("App name is required");
     if (trimmed.length > 80) throw new Error("App name is too long (max 80 chars)");
     await ctx.db.patch(args.appId, { name: trimmed, updatedAt: Date.now() });
+  },
+});
+
+export const deleteApp = mutation({
+  args: { appId: v.id("apps") },
+  handler: async (ctx, args) => {
+    await requireAppAccess(ctx, args.appId);
+    await cascadeDeleteApp(ctx, args.appId);
   },
 });
