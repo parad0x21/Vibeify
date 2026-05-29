@@ -41,10 +41,10 @@ type FeaturesByStatus = Record<string, FeatureDoc[]>;
 
 const STATUS_DOT: Record<string, string> = {
   backlog: "bg-[var(--color-muted)]",
-  in_progress: "bg-[var(--color-info)] shadow-[0_0_8px_rgba(34,211,238,0.5)]",
-  testing: "bg-[var(--color-warning)] shadow-[0_0_8px_rgba(245,158,11,0.5)]",
-  complete: "bg-[var(--color-success)] shadow-[0_0_8px_rgba(16,185,129,0.5)]",
-  live: "bg-[var(--color-accent)] shadow-[0_0_8px_var(--color-accent-glow)]",
+  in_progress: "bg-[var(--color-info)]",
+  testing: "bg-[var(--color-warning)]",
+  complete: "bg-[var(--color-success)]",
+  live: "bg-[var(--color-accent)]",
 };
 
 export function KanbanView({
@@ -213,9 +213,8 @@ function Column({
     <div
       ref={setNodeRef}
       className={cn(
-        "flex min-h-[24rem] flex-col rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-panel)]/40 transition-all duration-200",
-        isOver &&
-          "border-[var(--color-accent)] bg-[color:var(--color-accent-soft)] shadow-[0_0_0_1px_var(--color-accent-soft)_inset,0_0_24px_var(--color-accent-glow)]",
+        "flex min-h-[24rem] flex-col rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-panel)]/40 transition-colors duration-200",
+        isOver && "border-[var(--color-accent)] bg-[color:var(--color-accent-soft)]",
       )}
     >
       <header className="flex items-center justify-between px-3 py-3">
@@ -300,8 +299,8 @@ function FeatureCard({
       className={cn(
         "group relative cursor-pointer rounded-[var(--radius-md)] border bg-[var(--color-panel)] p-3 transition-all duration-150",
         dragging
-          ? "cursor-grabbing rotate-1 scale-[1.02] border-[var(--color-accent)] shadow-[var(--shadow-3),0_0_24px_var(--color-accent-glow)]"
-          : "border-[var(--color-border)] shadow-[var(--shadow-1)] hover:-translate-y-px hover:border-[var(--color-border-strong)] hover:shadow-[var(--shadow-2)]",
+          ? "cursor-grabbing scale-[1.02] border-[var(--color-accent)] shadow-[var(--shadow-3)]"
+          : "border-[var(--color-border)] shadow-[var(--shadow-1)] hover:border-[var(--color-border-strong)] hover:bg-[var(--color-panel-2)]",
       )}
     >
       <h3 className="line-clamp-3 text-[13px] font-medium leading-snug text-[var(--color-text)]">

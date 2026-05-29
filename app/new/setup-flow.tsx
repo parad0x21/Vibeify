@@ -89,11 +89,7 @@ export function SetupFlow() {
         <Stepper steps={STEP_LABELS} current={step} />
       </div>
 
-      <div className="relative overflow-hidden rounded-[var(--radius-xl)] border border-[var(--color-border)] bg-[var(--color-panel)] p-8 shadow-[var(--shadow-2)] md:p-10">
-        <span
-          aria-hidden
-          className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/8 to-transparent"
-        />
+      <div className="relative overflow-hidden rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-panel)] p-8 shadow-[var(--shadow-1)] md:p-10">
         <AnimatePresence mode="wait">
           {step === 0 ? (
             <motion.div

@@ -218,24 +218,12 @@ export function KnowledgeListClient({ appId }: { appId: string }) {
                 onClick={() => handleAiGenerate(item.kind)}
                 disabled={generatingKind !== null}
                 className={cn(
-                  "group relative flex flex-col items-start gap-3 overflow-hidden rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-panel)] p-5 text-left shadow-[var(--shadow-1)] transition-all duration-200",
-                  "hover:-translate-y-0.5 hover:border-[var(--color-border-strong)] hover:bg-[var(--color-panel-2)] hover:shadow-[var(--shadow-2)]",
-                  "disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0",
+                  "group relative flex flex-col items-start gap-3 overflow-hidden rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-panel)] p-5 text-left shadow-[var(--shadow-1)] transition-colors duration-200",
+                  "hover:border-[var(--color-border-strong)] hover:bg-[var(--color-panel-2)]",
+                  "disabled:cursor-not-allowed disabled:opacity-60",
                 )}
               >
-                <span
-                  aria-hidden
-                  className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
-                  style={{
-                    background:
-                      "radial-gradient(400px 200px at 50% 0%, rgba(99,102,241,0.08), transparent 70%)",
-                  }}
-                />
-                <div className="relative grid h-9 w-9 place-items-center overflow-hidden rounded-[var(--radius-md)] bg-gradient-to-br from-[var(--color-accent-from)] to-[var(--color-accent-to)] text-white shadow-[var(--shadow-1)]">
-                  <span
-                    aria-hidden
-                    className="pointer-events-none absolute inset-x-0 top-0 h-px bg-white/30"
-                  />
+                <div className="relative grid h-9 w-9 place-items-center rounded-[var(--radius-md)] border border-[var(--color-border-strong)] bg-[var(--color-panel-2)] text-[var(--color-accent)] transition-colors group-hover:border-[var(--color-accent)]">
                   <Icon className="h-4 w-4" />
                 </div>
                 <div className="relative flex-1">
@@ -476,17 +464,8 @@ function DocCard({
 
 function EmptyDocs() {
   return (
-    <div className="relative flex flex-col items-center gap-4 overflow-hidden rounded-[var(--radius-xl)] border border-[var(--color-border)] bg-[var(--color-panel)] px-6 py-14 text-center shadow-[var(--shadow-1)]">
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0"
-        style={{
-          background:
-            "radial-gradient(500px 200px at 50% 0%, rgba(99,102,241,0.08), transparent 70%)",
-        }}
-      />
-      <div className="relative grid h-12 w-12 place-items-center overflow-hidden rounded-[var(--radius-lg)] bg-gradient-to-br from-[var(--color-accent-from)] to-[var(--color-accent-to)] text-white shadow-[var(--shadow-1)]">
-        <span aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-px bg-white/30" />
+    <div className="relative flex flex-col items-center gap-4 overflow-hidden rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-panel)] px-6 py-14 text-center shadow-[var(--shadow-1)]">
+      <div className="relative grid h-12 w-12 place-items-center rounded-[var(--radius-lg)] border border-[var(--color-border-strong)] bg-[var(--color-panel-2)] text-[var(--color-accent)]">
         <BookOpen className="h-5 w-5" />
       </div>
       <div className="relative">

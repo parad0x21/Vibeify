@@ -16,14 +16,13 @@ export const Chip = forwardRef<HTMLButtonElement, ChipProps>(function Chip(
       type="button"
       aria-pressed={selected}
       className={cn(
-        "inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium",
+        "inline-flex items-center gap-1.5 rounded-[var(--radius-md)] px-3 py-1.5 text-xs font-medium",
         "border transition-all duration-150 ease-out",
-        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--color-accent-glow)]",
+        "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[color:var(--color-accent-glow)]",
         selected
           ? cn(
               "border-[var(--color-accent)] text-[var(--color-text)]",
               "bg-[color:var(--color-accent-soft)]",
-              "shadow-[0_0_0_1px_var(--color-accent-soft)_inset]",
             )
           : cn(
               "border-[var(--color-border)] bg-[var(--color-panel-2)] text-[var(--color-muted)]",

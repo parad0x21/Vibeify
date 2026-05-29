@@ -12,23 +12,14 @@ export function AuthShell({
 }) {
   return (
     <main className="relative min-h-screen overflow-hidden bg-[var(--color-bg-base)]">
-      {/* Ambient glow */}
+      {/* Subtle monochrome grid texture */}
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-0"
-        style={{
-          background:
-            "radial-gradient(900px 600px at 50% -10%, rgba(99,102,241,0.18), transparent 60%), radial-gradient(700px 500px at 80% 110%, rgba(139,92,246,0.10), transparent 60%)",
-        }}
-      />
-      {/* Grid hint */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0 opacity-[0.04]"
+        className="pointer-events-none absolute inset-0 opacity-[0.035]"
         style={{
           backgroundImage:
             "linear-gradient(var(--color-text) 1px, transparent 1px), linear-gradient(90deg, var(--color-text) 1px, transparent 1px)",
-          backgroundSize: "48px 48px",
+          backgroundSize: "56px 56px",
           maskImage:
             "radial-gradient(ellipse 60% 50% at 50% 30%, black 0%, transparent 80%)",
           WebkitMaskImage:

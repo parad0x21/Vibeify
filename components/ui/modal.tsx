@@ -46,29 +46,24 @@ export function Modal({
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.18 }}
-          className="fixed inset-0 z-50 grid place-items-center bg-black/65 p-6 backdrop-blur-md"
+          className="fixed inset-0 z-50 grid place-items-center bg-black/80 p-6"
           onClick={onClose}
           role="dialog"
           aria-modal="true"
           aria-labelledby={title ? "modal-title" : undefined}
         >
           <motion.div
-            initial={{ opacity: 0, y: 12, scale: 0.97 }}
+            initial={{ opacity: 0, y: 8, scale: 0.98 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 6, scale: 0.98 }}
+            exit={{ opacity: 0, y: 4, scale: 0.98 }}
             transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
             onClick={(e) => e.stopPropagation()}
             className={cn(
-              "relative w-full max-w-xl rounded-[var(--radius-xl)] border border-[var(--color-border-strong)] bg-[var(--color-panel-2)] p-7",
+              "relative w-full max-w-lg rounded-[var(--radius-xl)] border border-[var(--color-border-strong)] bg-[var(--color-panel)] p-7",
               "shadow-[var(--shadow-3)]",
               className,
             )}
           >
-            {/* subtle top highlight */}
-            <span
-              aria-hidden
-              className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent"
-            />
             <button
               type="button"
               onClick={onClose}

@@ -1,16 +1,10 @@
 import type { Metadata } from "next";
-import { Sora, Inter } from "next/font/google";
+import { Inter } from "next/font/google";
 import { Providers } from "@/components/providers";
 import { EnsureUser } from "@/components/ensure-user";
 import "./globals.css";
 
-const sora = Sora({
-  subsets: ["latin"],
-  weight: ["500", "600", "700"],
-  variable: "--font-sora",
-  display: "swap",
-});
-
+// Inter is the fallback for Satoshi/Clash Display (loaded via Fontshare below).
 const inter = Inter({
   subsets: ["latin"],
   weight: ["400", "500", "600"],
@@ -29,7 +23,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${sora.variable} ${inter.variable}`}>
+    <html lang="en" className={inter.variable}>
+      <head>
+        <link rel="preconnect" href="https://api.fontshare.com" crossOrigin="anonymous" />
+        <link
+          rel="stylesheet"
+          href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700,900&f[]=clash-display@400,500,600,700&display=swap"
+        />
+      </head>
       <body className="min-h-screen antialiased">
         <Providers>
           <EnsureUser />

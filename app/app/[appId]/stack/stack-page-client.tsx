@@ -143,11 +143,7 @@ function StackEditor({
         </div>
       </motion.header>
 
-      <div className="relative overflow-hidden rounded-[var(--radius-xl)] border border-[var(--color-border)] bg-[var(--color-panel)] p-7 shadow-[var(--shadow-1)]">
-        <span
-          aria-hidden
-          className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/6 to-transparent"
-        />
+      <div className="relative overflow-hidden rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-panel)] p-7 shadow-[var(--shadow-1)]">
         <StackPicker value={draft} onChange={scheduleSave} />
       </div>
 
@@ -244,7 +240,7 @@ function DiffRow({ label, items }: { label: string; items: string[] }) {
         {items.map((item) => (
           <span
             key={item}
-            className="inline-flex items-center gap-1 rounded-full border border-[var(--color-accent)]/40 bg-[color:var(--color-accent-soft)] px-2.5 py-1 text-xs font-medium text-[var(--color-accent)]"
+            className="inline-flex items-center gap-1 rounded-[var(--radius-sm)] border border-[color:var(--color-accent-glow)] bg-[color:var(--color-accent-soft)] px-2.5 py-1 text-xs font-medium text-[var(--color-accent)]"
           >
             + {item}
           </span>
@@ -262,7 +258,7 @@ function StackSkeleton() {
           <Skeleton className="h-3 w-20 rounded" />
           <Skeleton className="h-8 w-32 rounded" />
         </div>
-        <Skeleton className="h-8 w-32 rounded-full" />
+        <Skeleton className="h-8 w-32 rounded-[var(--radius-md)]" />
       </div>
       <div className="space-y-7 rounded-[var(--radius-xl)] border border-[var(--color-border)] bg-[var(--color-panel)] p-7 shadow-[var(--shadow-1)]">
         {Array.from({ length: 6 }).map((_, i) => (
@@ -270,7 +266,7 @@ function StackSkeleton() {
             <Skeleton className="h-3 w-24 rounded" />
             <div className="flex gap-2">
               {Array.from({ length: 4 }).map((_, j) => (
-                <Skeleton key={j} className="h-7 w-20 rounded-full" />
+                <Skeleton key={j} className="h-7 w-20 rounded-[var(--radius-md)]" />
               ))}
             </div>
           </div>

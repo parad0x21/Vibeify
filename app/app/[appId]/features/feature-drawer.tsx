@@ -45,7 +45,7 @@ export function FeatureDrawer({
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.18 }}
-          className="fixed inset-0 z-50 bg-black/65 backdrop-blur-md"
+          className="fixed inset-0 z-50 bg-black/80"
           onClick={onClose}
         >
           <motion.aside
@@ -125,7 +125,7 @@ function DrawerHeader({
   right?: React.ReactNode;
 }) {
   return (
-    <header className="flex h-14 shrink-0 items-center justify-between gap-2 border-b border-[var(--color-border)] bg-[var(--color-panel)]/80 px-3 backdrop-blur-md">
+    <header className="flex h-14 shrink-0 items-center justify-between gap-2 border-b border-[var(--color-border)] bg-[var(--color-panel)] px-3">
       <IconButton onClick={onClose} label="Close" size="md">
         <X className="h-4 w-4" />
       </IconButton>
@@ -349,13 +349,13 @@ function SelectField({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         className={cn(
-          "h-10 w-full appearance-none rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-panel-2)] px-3 text-sm text-[var(--color-text)]",
-          "transition-[border-color,box-shadow] hover:border-[var(--color-border-strong)]",
-          "focus-visible:outline-none focus-visible:border-[var(--color-accent)] focus-visible:ring-2 focus-visible:ring-[color:var(--color-accent-glow)]",
+          "h-10 w-full appearance-none rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[#0d0d0d] px-3 text-sm text-[var(--color-text)]",
+          "transition-[border-color] hover:border-[var(--color-border-strong)]",
+          "focus-visible:outline-none focus-visible:border-[var(--color-accent)]",
         )}
         style={{
           backgroundImage:
-            "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238a93a6' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'/></svg>\")",
+            "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238b8b8b' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'/></svg>\")",
           backgroundRepeat: "no-repeat",
           backgroundPosition: "right 0.75rem center",
           backgroundSize: "12px",

@@ -143,7 +143,7 @@ function ViewToggle({ view, onChange }: { view: View; onChange: (v: View) => voi
     <div
       role="tablist"
       aria-label="Feature view"
-      className="inline-flex items-center rounded-full border border-[var(--color-border)] bg-[var(--color-panel)] p-0.5 shadow-[var(--shadow-1)]"
+      className="inline-flex items-center rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-panel)] p-0.5"
     >
       <ToggleButton
         active={view === "release"}
@@ -181,9 +181,9 @@ function ToggleButton({
       aria-selected={active}
       onClick={onClick}
       className={cn(
-        "inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium transition-all duration-150",
+        "inline-flex items-center gap-1.5 rounded-[var(--radius-sm)] px-3 py-1 text-xs font-medium transition-colors duration-150",
         active
-          ? "bg-[var(--color-panel-2)] text-[var(--color-text)] shadow-[inset_0_0_0_1px_var(--color-border-strong)]"
+          ? "bg-[var(--color-subtle)] text-[var(--color-text)] ring-1 ring-inset ring-[var(--color-border-strong)]"
           : "text-[var(--color-muted)] hover:text-[var(--color-text)]",
       )}
     >
@@ -207,18 +207,9 @@ function EmptyFeatures({
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3, ease: "easeOut" }}
-      className="relative flex flex-col items-center gap-5 overflow-hidden rounded-[var(--radius-xl)] border border-[var(--color-border)] bg-[var(--color-panel)] py-20 text-center shadow-[var(--shadow-1)]"
+      className="relative flex flex-col items-center gap-5 overflow-hidden rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-panel)] py-20 text-center shadow-[var(--shadow-1)]"
     >
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0"
-        style={{
-          background:
-            "radial-gradient(500px 200px at 50% 0%, rgba(99,102,241,0.10), transparent 70%)",
-        }}
-      />
-      <div className="relative grid h-14 w-14 place-items-center overflow-hidden rounded-[var(--radius-lg)] bg-gradient-to-br from-[var(--color-accent-from)] to-[var(--color-accent-to)] text-white shadow-[var(--shadow-2)]">
-        <span aria-hidden className="pointer-events-none absolute inset-x-0 top-0 h-px bg-white/30" />
+      <div className="relative grid h-14 w-14 place-items-center rounded-[var(--radius-lg)] border border-[var(--color-border-strong)] bg-[var(--color-panel-2)] text-[var(--color-accent)]">
         <LayoutGrid className="h-6 w-6" />
       </div>
       <div className="relative max-w-md">

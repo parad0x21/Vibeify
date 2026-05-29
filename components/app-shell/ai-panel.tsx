@@ -114,9 +114,8 @@ function PanelHeader({
           <div className="flex items-center gap-2.5">
             <div
               aria-hidden
-              className="relative grid h-7 w-7 place-items-center overflow-hidden rounded-[8px] bg-gradient-to-br from-[var(--color-accent-from)] to-[var(--color-accent-to)] text-white shadow-[var(--shadow-1)]"
+              className="grid h-7 w-7 place-items-center rounded-[var(--radius-md)] border border-[var(--color-border-strong)] bg-[var(--color-panel-2)] text-[var(--color-accent)]"
             >
-              <span className="pointer-events-none absolute inset-x-0 top-0 h-px bg-white/30" />
               <Sparkles className="h-3.5 w-3.5" />
             </div>
             <div className="flex flex-col leading-tight">
@@ -189,9 +188,8 @@ function NoAppState() {
     <div className="flex flex-1 flex-col items-center justify-center gap-4 px-6 text-center">
       <div
         aria-hidden
-        className="relative grid h-14 w-14 place-items-center overflow-hidden rounded-[var(--radius-lg)] bg-gradient-to-br from-[var(--color-accent-from)] to-[var(--color-accent-to)] text-white shadow-[var(--shadow-2)]"
+        className="grid h-14 w-14 place-items-center rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-panel-2)] text-[var(--color-accent)]"
       >
-        <span className="pointer-events-none absolute inset-x-0 top-0 h-px bg-white/30" />
         <Sparkles className="h-5 w-5" />
       </div>
       <div>
@@ -327,8 +325,8 @@ function ChatBody({ appId }: { appId: string }) {
         )}
       </div>
 
-      <div className="shrink-0 border-t border-[var(--color-border)] bg-[var(--color-panel)]/80 p-3 backdrop-blur-sm">
-        <div className="group/input relative rounded-[var(--radius-md)] ring-1 ring-inset ring-[var(--color-border)] transition-all focus-within:ring-2 focus-within:ring-[var(--color-accent)]/50 focus-within:shadow-[0_0_0_4px_var(--color-accent-soft)]">
+      <div className="shrink-0 border-t border-[var(--color-border)] bg-[var(--color-panel)] p-3">
+        <div className="group/input relative rounded-[var(--radius-md)] ring-1 ring-inset ring-[var(--color-border)] transition-colors focus-within:ring-[var(--color-accent)]">
           <textarea
             value={input}
             onChange={(e) => setInput(e.target.value)}
@@ -337,9 +335,9 @@ function ChatBody({ appId }: { appId: string }) {
             rows={1}
             disabled={isStreaming}
             className={cn(
-              "w-full resize-none rounded-[var(--radius-md)] bg-[var(--color-panel-2)] py-2.5 pl-3.5 pr-11 text-sm text-[var(--color-text)]",
+              "w-full resize-none rounded-[var(--radius-md)] bg-[#0d0d0d] py-2.5 pl-3.5 pr-11 text-sm text-[var(--color-text)]",
               "min-h-[44px] max-h-32",
-              "placeholder:text-[var(--color-muted)]",
+              "placeholder:text-[var(--color-text-subtle)]",
               "focus:outline-none",
               "disabled:cursor-not-allowed disabled:opacity-60",
             )}
@@ -350,11 +348,11 @@ function ChatBody({ appId }: { appId: string }) {
             disabled={isStreaming || input.trim().length === 0}
             aria-label="Send"
             className={cn(
-              "absolute right-1.5 top-1.5 grid h-8 w-8 place-items-center rounded-[var(--radius-sm)] transition-all duration-150",
-              "bg-gradient-to-b from-[var(--color-accent-from)] to-[var(--color-accent-to)] text-white shadow-[var(--shadow-1)]",
-              "hover:-translate-y-px hover:shadow-[var(--shadow-2)] hover:brightness-110",
-              "active:translate-y-0 active:scale-[0.96]",
-              "disabled:bg-[var(--color-panel-2)] disabled:from-[var(--color-panel-2)] disabled:to-[var(--color-panel-2)] disabled:text-[var(--color-muted)] disabled:shadow-none disabled:hover:translate-y-0",
+              "absolute right-1.5 top-1.5 grid h-8 w-8 place-items-center rounded-[var(--radius-sm)] transition-colors duration-150",
+              "border border-[var(--color-border-strong)] bg-[var(--color-panel-2)] text-[var(--color-accent)]",
+              "hover:border-[var(--color-accent)] hover:bg-[var(--color-subtle)]",
+              "active:scale-[0.96]",
+              "disabled:border-[var(--color-border)] disabled:bg-[var(--color-panel-2)] disabled:text-[var(--color-text-subtle)] disabled:hover:border-[var(--color-border)]",
             )}
           >
             {isStreaming ? (
@@ -377,9 +375,8 @@ function EmptyChat({ onPick }: { onPick: (text: string) => void }) {
     <div className="flex h-full flex-col items-center justify-center gap-4 px-6 pb-10 text-center">
       <div
         aria-hidden
-        className="relative grid h-14 w-14 place-items-center overflow-hidden rounded-[var(--radius-lg)] bg-gradient-to-br from-[var(--color-accent-from)] to-[var(--color-accent-to)] text-white shadow-[var(--shadow-2)]"
+        className="grid h-14 w-14 place-items-center rounded-[var(--radius-lg)] border border-[var(--color-border)] bg-[var(--color-panel-2)] text-[var(--color-accent)]"
       >
-        <span className="pointer-events-none absolute inset-x-0 top-0 h-px bg-white/30" />
         <Sparkles className="h-5 w-5" />
       </div>
       <div>
@@ -432,7 +429,7 @@ function ChatBubble({
     <div className="mb-5 flex justify-start gap-2.5">
       <div
         aria-hidden
-        className="mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-[6px] bg-gradient-to-br from-[var(--color-accent-from)] to-[var(--color-accent-to)] text-white shadow-[var(--shadow-1)]"
+        className="mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-[var(--radius-sm)] border border-[var(--color-border-strong)] bg-[var(--color-panel-2)] text-[var(--color-accent)]"
       >
         <Sparkles className="h-3 w-3" />
       </div>
@@ -450,7 +447,7 @@ function ChatBubble({
             {streaming ? (
               <span
                 aria-hidden
-                className="ml-1 inline-block h-3 w-2 translate-y-0.5 animate-pulse rounded-sm bg-[var(--color-accent)] shadow-[0_0_8px_var(--color-accent-glow)]"
+                className="ml-1 inline-block h-3 w-2 translate-y-0.5 animate-pulse rounded-sm bg-[var(--color-accent)]"
               />
             ) : null}
           </>
