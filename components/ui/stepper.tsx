@@ -22,9 +22,9 @@ export function Stepper({ steps, current }: StepperProps) {
                 className={cn(
                   "relative grid h-6 w-6 place-items-center rounded-full text-[10px] font-semibold transition-all duration-200 ease-out",
                   isActive
-                    ? "bg-gradient-to-b from-[var(--color-accent-from)] to-[var(--color-accent-to)] text-white shadow-[var(--shadow-glow)]"
+                    ? "bg-[var(--color-accent)] text-[var(--color-accent-fg)]"
                     : isComplete
-                      ? "bg-[color:var(--color-accent-soft)] text-[var(--color-accent)] ring-1 ring-inset ring-[var(--color-accent)]/30"
+                      ? "bg-[color:var(--color-accent-soft)] text-[var(--color-accent)] ring-1 ring-inset ring-[color:var(--color-accent-glow)]"
                       : "bg-[var(--color-panel-2)] text-[var(--color-muted)] ring-1 ring-inset ring-[var(--color-border)]",
                 )}
               >
@@ -49,7 +49,7 @@ export function Stepper({ steps, current }: StepperProps) {
                   initial={false}
                   animate={{ width: isComplete ? "100%" : "0%" }}
                   transition={{ duration: 0.4, ease: "easeOut" }}
-                  className="absolute inset-y-0 left-0 bg-gradient-to-r from-[var(--color-accent-from)] to-[var(--color-accent-to)]"
+                  className="absolute inset-y-0 left-0 bg-[var(--color-accent)]"
                 />
               </div>
             ) : null}

@@ -16,7 +16,7 @@ export function TopTabs({ appId }: { appId: string }) {
   const pathname = usePathname();
   return (
     <nav
-      className="relative flex items-center gap-0.5 rounded-full border border-[var(--color-border)] bg-[var(--color-panel)]/80 p-1 shadow-[var(--shadow-1)] backdrop-blur-sm"
+      className="relative flex items-center gap-0.5 rounded-[var(--radius-md)] border border-[var(--color-border)] bg-[var(--color-panel)] p-1"
       aria-label="App sections"
     >
       {TABS.map((tab) => {
@@ -28,9 +28,8 @@ export function TopTabs({ appId }: { appId: string }) {
             href={href}
             aria-current={isActive ? "page" : undefined}
             className={cn(
-              "relative px-3.5 py-1.5 text-[13px] font-medium tracking-tight transition-colors",
-              "rounded-full",
-              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--color-accent-glow)]",
+              "relative rounded-[var(--radius-sm)] px-3.5 py-1.5 text-[13px] font-medium tracking-tight transition-colors",
+              "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[color:var(--color-accent-glow)]",
               isActive
                 ? "text-[var(--color-text)]"
                 : "text-[var(--color-muted)] hover:text-[var(--color-text)]",
@@ -40,7 +39,7 @@ export function TopTabs({ appId }: { appId: string }) {
               <motion.span
                 aria-hidden
                 layoutId="active-tab-pill"
-                className="absolute inset-0 rounded-full bg-[var(--color-panel-2)] shadow-[inset_0_0_0_1px_var(--color-border-strong),0_0_18px_rgba(99,102,241,0.18)]"
+                className="absolute inset-0 rounded-[var(--radius-sm)] bg-[var(--color-subtle)] ring-1 ring-inset ring-[var(--color-border-strong)]"
                 transition={{ type: "spring", stiffness: 380, damping: 32 }}
               />
             ) : null}

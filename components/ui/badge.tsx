@@ -46,7 +46,7 @@ const TONES: Record<Tone, { bg: string; text: string; dot: string; ring: string 
     bg: "bg-[color:var(--color-accent-soft)]",
     text: "text-[var(--color-accent)]",
     dot: "bg-[var(--color-accent)]",
-    ring: "ring-[rgba(99,102,241,0.30)]",
+    ring: "ring-[color:var(--color-accent-glow)]",
   },
 };
 
@@ -67,7 +67,7 @@ export function Badge({
   return (
     <span
       className={cn(
-        "inline-flex items-center justify-center rounded-full font-medium tracking-tight",
+        "inline-flex items-center justify-center rounded-[var(--radius-sm)] font-medium tracking-tight",
         "ring-1 ring-inset",
         SIZES[size],
         t.bg,

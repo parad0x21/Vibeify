@@ -21,7 +21,7 @@ export function SaveStatusPill({
 
   if (status === "saving") {
     return (
-      <Pill tone="info" dot="bg-[var(--color-info)] shadow-[0_0_8px_rgba(34,211,238,0.6)]">
+      <Pill tone="info" dot="bg-[var(--color-info)]">
         <Loader2 className="h-3 w-3 animate-spin" />
         Saving…
       </Pill>
@@ -30,7 +30,7 @@ export function SaveStatusPill({
 
   if (status === "error") {
     return (
-      <Pill tone="error" dot="bg-[var(--color-danger)] shadow-[0_0_8px_rgba(244,63,94,0.6)]">
+      <Pill tone="error" dot="bg-[var(--color-danger)]">
         <AlertCircle className="h-3 w-3" />
         Save failed
       </Pill>
@@ -38,7 +38,7 @@ export function SaveStatusPill({
   }
 
   return (
-    <Pill tone="success" dot="bg-[var(--color-success)] shadow-[0_0_8px_rgba(16,185,129,0.5)]">
+    <Pill tone="success" dot="bg-[var(--color-success)]">
       <Check className="h-3 w-3" />
       {lastSaved ? `Saved ${formatRelative(lastSaved)}` : "Saved"}
     </Pill>
@@ -57,7 +57,7 @@ function Pill({
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1.5 rounded-full border border-[var(--color-border)] bg-[var(--color-panel-2)] px-2 py-1 text-[10px] font-medium tracking-tight",
+        "inline-flex items-center gap-1.5 rounded-[var(--radius-sm)] border border-[var(--color-border)] bg-[var(--color-panel-2)] px-2 py-1 text-[10px] font-medium tracking-tight",
         tone === "error"
           ? "text-[var(--color-danger)]"
           : tone === "info"

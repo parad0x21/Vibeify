@@ -25,7 +25,7 @@ export function AppShell({ appId, children }: { appId: string; children: ReactNo
       <AiPanel appId={appId} />
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="sticky top-0 z-30 flex h-14 items-center justify-between gap-4 border-b border-[var(--color-border)] bg-[var(--color-panel)]/70 px-6 backdrop-blur-xl">
+        <header className="sticky top-0 z-30 flex h-14 items-center justify-between gap-4 border-b border-[var(--color-border)] bg-[var(--color-bg-base)] px-6">
           <div className="flex shrink-0 items-center gap-3">
             <Link
               href="/welcome"
@@ -58,7 +58,7 @@ export function AppShell({ appId, children }: { appId: string; children: ReactNo
               <Link
                 href="/new"
                 aria-label="Create new app"
-                className="inline-flex h-8 w-8 items-center justify-center rounded-[var(--radius-sm)] bg-gradient-to-b from-[var(--color-accent-from)] to-[var(--color-accent-to)] text-white shadow-[var(--shadow-1)] transition-all duration-150 hover:-translate-y-px hover:shadow-[var(--shadow-2)] hover:brightness-110 active:translate-y-0 active:scale-[0.96] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--color-accent-glow)]"
+                className="inline-flex h-8 w-8 items-center justify-center rounded-[var(--radius-sm)] border border-[var(--color-border-strong)] bg-[var(--color-panel-2)] text-[var(--color-accent)] transition-colors duration-150 hover:border-[var(--color-accent)] hover:bg-[var(--color-subtle)] active:scale-[0.96] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[color:var(--color-accent-glow)]"
               >
                 <Plus className="h-4 w-4" />
               </Link>

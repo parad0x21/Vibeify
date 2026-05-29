@@ -35,7 +35,7 @@ function PrdSkeleton() {
           <Skeleton className="h-3 w-20 rounded" />
           <Skeleton className="h-8 w-32 rounded" />
         </div>
-        <Skeleton className="h-8 w-28 rounded-full" />
+        <Skeleton className="h-8 w-28 rounded-[var(--radius-md)]" />
       </div>
       <Skeleton className="h-[560px] rounded-[var(--radius-lg)]" />
     </section>

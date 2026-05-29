@@ -87,16 +87,12 @@ export function ExistingApps() {
                   className="pointer-events-none absolute inset-x-0 bottom-0 h-px scale-x-0 bg-gradient-to-r from-transparent via-[var(--color-accent)] to-transparent transition-transform duration-300 group-hover:scale-x-100"
                 />
                 <div className="flex w-full items-center justify-between">
-                  <div className="relative grid h-9 w-9 place-items-center overflow-hidden rounded-[var(--radius-md)] bg-gradient-to-br from-[var(--color-accent-from)] to-[var(--color-accent-to)] text-white shadow-[var(--shadow-1)]">
-                    <span
-                      aria-hidden
-                      className="pointer-events-none absolute inset-x-0 top-0 h-px bg-white/30"
-                    />
+                  <div className="grid h-9 w-9 place-items-center rounded-[var(--radius-md)] border border-[var(--color-border-strong)] bg-[var(--color-panel-2)] text-[var(--color-text)]">
                     <span className="font-display text-[12px] font-semibold">
                       {initials || <Icon className="h-4 w-4" />}
                     </span>
                   </div>
-                  <span className="inline-flex items-center gap-1 rounded-full bg-[var(--color-subtle)] px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider text-[var(--color-muted)]">
+                  <span className="inline-flex items-center gap-1 rounded-[var(--radius-sm)] border border-[var(--color-border)] bg-[var(--color-subtle)] px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider text-[var(--color-muted)]">
                     <Icon className="h-2.5 w-2.5" />
                     {TYPE_LABEL[app.type]}
                   </span>

@@ -49,7 +49,7 @@ export function AppSwitcher({ currentAppId }: { currentAppId: string }) {
         aria-expanded={open}
       >
         <span
-          className="h-1.5 w-1.5 shrink-0 rounded-full bg-gradient-to-br from-[var(--color-accent-from)] to-[var(--color-accent-to)]"
+          className="h-1.5 w-1.5 shrink-0 rounded-full bg-[var(--color-accent)]"
           aria-hidden
         />
         <span className="max-w-[160px] truncate">
@@ -101,7 +101,7 @@ export function AppSwitcher({ currentAppId }: { currentAppId: string }) {
                       {isCurrent ? (
                         <span
                           aria-hidden
-                          className="absolute left-0 top-1.5 bottom-1.5 w-0.5 rounded-r-full bg-gradient-to-b from-[var(--color-accent-from)] to-[var(--color-accent-to)]"
+                          className="absolute left-0 top-1.5 bottom-1.5 w-0.5 rounded-r-full bg-[var(--color-accent)]"
                         />
                       ) : null}
                       <div className="min-w-0 flex-1">

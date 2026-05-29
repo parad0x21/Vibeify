@@ -10,35 +10,35 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 const VARIANTS: Record<Variant, string> = {
+  // Matte surface, subtle border, accent only on hover/focus border.
   primary: cn(
-    "text-white font-medium",
-    "bg-gradient-to-b from-[var(--color-accent-from)] to-[var(--color-accent-to)]",
-    "shadow-[var(--shadow-1)]",
-    "hover:-translate-y-px hover:shadow-[var(--shadow-2)] hover:brightness-110",
-    "active:translate-y-0 active:scale-[0.98] active:brightness-100",
-    "focus-visible:ring-2 focus-visible:ring-offset-0 focus-visible:ring-[color:var(--color-accent-glow)]",
-    "disabled:opacity-50 disabled:hover:translate-y-0 disabled:hover:shadow-[var(--shadow-1)] disabled:hover:brightness-100",
+    "text-[var(--color-text)] font-medium",
+    "bg-[var(--color-panel-2)] border border-[var(--color-border-strong)]",
+    "hover:border-[var(--color-accent)] hover:bg-[var(--color-subtle)]",
+    "active:scale-[0.98]",
+    "focus-visible:border-[var(--color-accent)] focus-visible:ring-1 focus-visible:ring-[color:var(--color-accent-glow)]",
+    "disabled:opacity-50 disabled:hover:border-[var(--color-border-strong)] disabled:hover:bg-[var(--color-panel-2)]",
   ),
   secondary: cn(
-    "text-[var(--color-text)]",
-    "bg-[var(--color-panel-2)] border border-[var(--color-border-strong)]",
-    "hover:bg-[var(--color-subtle)] hover:border-[var(--color-border-strong)]",
+    "text-[var(--color-muted)]",
+    "bg-transparent border border-[var(--color-border)]",
+    "hover:border-[var(--color-border-strong)] hover:text-[var(--color-text)] hover:bg-[var(--color-subtle)]",
     "active:scale-[0.98]",
-    "focus-visible:ring-2 focus-visible:ring-[color:var(--color-accent-glow)]",
+    "focus-visible:ring-1 focus-visible:ring-[color:var(--color-accent-glow)]",
   ),
   ghost: cn(
     "bg-transparent text-[var(--color-muted)]",
     "hover:bg-[var(--color-subtle)] hover:text-[var(--color-text)]",
     "active:scale-[0.98]",
-    "focus-visible:ring-2 focus-visible:ring-[color:var(--color-accent-glow)]",
+    "focus-visible:ring-1 focus-visible:ring-[color:var(--color-accent-glow)]",
   ),
+  // Danger: thin red border only.
   destructive: cn(
-    "text-white font-medium",
-    "bg-[var(--color-danger)]",
-    "shadow-[var(--shadow-1)]",
-    "hover:-translate-y-px hover:shadow-[var(--shadow-2)] hover:brightness-110",
-    "active:translate-y-0 active:scale-[0.98]",
-    "focus-visible:ring-2 focus-visible:ring-[color:var(--color-danger)]",
+    "text-[var(--color-danger)] font-medium",
+    "bg-transparent border border-[color:color-mix(in_srgb,var(--color-danger)_40%,transparent)]",
+    "hover:border-[var(--color-danger)] hover:bg-[color:color-mix(in_srgb,var(--color-danger)_10%,transparent)]",
+    "active:scale-[0.98]",
+    "focus-visible:ring-1 focus-visible:ring-[color:var(--color-danger)]",
   ),
 };
 

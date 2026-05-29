@@ -113,7 +113,7 @@ export function ReleaseModal({
               onChange={(e) => setEmoji(e.target.value)}
               maxLength={12}
               aria-label="Custom emoji"
-              className="h-9 w-16 rounded-[var(--radius-sm)] border border-[var(--color-border)] bg-[var(--color-panel)] text-center text-base text-[var(--color-text)] outline-none transition-colors hover:border-[var(--color-border-strong)] focus-visible:border-[var(--color-accent)] focus-visible:ring-2 focus-visible:ring-[color:var(--color-accent-glow)]"
+              className="h-9 w-16 rounded-[var(--radius-sm)] border border-[var(--color-border)] bg-[#0d0d0d] text-center text-base text-[var(--color-text)] outline-none transition-colors hover:border-[var(--color-border-strong)] focus-visible:border-[var(--color-accent)]"
             />
           </div>
         </div>
